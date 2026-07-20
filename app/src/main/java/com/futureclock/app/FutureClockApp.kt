@@ -44,8 +44,10 @@ class FutureClockApp : Application() {
             } catch (_: Throwable) { /* ads unavailable in dev */ }
         }
 
-        // Start periodic widget updates
-        WidgetUpdateScheduler.scheduleNext(this)
+        // Start periodic widget updates. The scheduler itself catches
+        // SecurityException from missing exact-alarm permission, but wrap it
+        // again here as a defensive guard so a startup crash is impossible.
+        runCatching { WidgetUpdateScheduler.scheduleNext(this) }
     }
 
     private fun createNotificationChannels() {

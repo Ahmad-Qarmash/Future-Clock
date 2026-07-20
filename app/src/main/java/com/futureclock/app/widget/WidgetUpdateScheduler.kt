@@ -17,6 +17,10 @@ object WidgetUpdateScheduler {
      * Schedule the next tick to align with the next minute boundary, plus a small buffer
      * to make sure the system has a chance to redraw. This avoids drift from chained
      * delays or workmanager.
+     *
+     * Uses the inexact `setAndAllowWhileIdle` variant when exact alarms are not permitted
+     * (API 31+ requires the user to grant `SCHEDULE_EXACT_ALARM` via Settings). We don't
+     * want to crash the app at startup if the permission is still missing.
      */
     fun scheduleNext(context: Context) {
         val now = System.currentTimeMillis()
@@ -24,12 +28,28 @@ object WidgetUpdateScheduler {
         val triggerAtElapsed = nextMinute - SystemClock.elapsedRealtime()
         val pi = pendingIntent(context)
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtElapsed, pi)
-        } else {
-            @Suppress("DEPRECATION")
-            am.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtElapsed, pi)
-        }
+        val canExact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try { am.canScheduleExactAlarms() } catch (_: Throwable) { false }
+        } else true
+        try {
+            when {
+                canExact && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                    am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtElapsed, pi)
+                }
+                canExact -> {
+                    @Suppress("DEPRECATION")
+                    am.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtElapsed, pi)
+                }
+                else -> {
+                    am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtElapsed, pi)
+                }
+            }
+        } catch (_: SecurityException) {
+            // Permission was revoked; fall back to inexact to keep the app responsive.
+            try {
+                am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtElapsed, pi)
+            } catch (_: Throwable) { /* last-resort: skip tick this minute */ }
+        } catch (_: Throwable) { /* defensive: never crash on tick scheduling */ }
     }
 
     fun refreshAll(context: Context) {
