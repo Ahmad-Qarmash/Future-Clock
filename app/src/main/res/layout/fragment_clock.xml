@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/space_xl"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/text_day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxl"
+                android:textColor="@color/neon_cyan"
+                android:textSize="@dimen/text_subtitle"
+                android:textStyle="bold"
+                android:letterSpacing="0.2"
+                tools:text="MONDAY" />
+
+            <TextView
+                android:id="@+id/text_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_l"
+                android:fontFamily="sans-serif-thin"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/clock_huge"
+                android:includeFontPadding="false"
+                tools:text="12:34" />
+
+            <TextView
+                android:id="@+id/text_seconds"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-thin"
+                android:textColor="@color/neon_magenta"
+                android:textSize="@dimen/text_headline"
+                android:includeFontPadding="false"
+                tools:text=":56" />
+
+            <TextView
+                android:id="@+id/text_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_subtitle"
+                tools:text="January 1, 2026" />
+
+            <com.futureclock.app.ui.views.AnalogClockView
+                android:id="@+id/analog_clock"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:layout_marginTop="@dimen/space_xxl" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/space_xl"
+                android:weightSum="2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_l"
+                    android:layout_marginEnd="@dimen/space_s"
+                    android:background="@drawable/bg_neon_outline">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/clock_battery_format"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="@dimen/text_caption"
+                        android:letterSpacing="0.1"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/text_battery"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:fontFamily="sans-serif-light"
+                        android:textColor="@color/neon_lime"
+                        android:textSize="@dimen/text_headline"
+                        tools:text="85%" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_l"
+                    android:layout_marginStart="@dimen/space_s"
+                    android:background="@drawable/bg_neon_outline">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TIMEZONE"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="@dimen/text_caption"
+                        android:letterSpacing="0.1"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/text_timezone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:fontFamily="sans-serif-light"
+                        android:textColor="@color/neon_magenta"
+                        android:textSize="@dimen/text_title"
+                        tools:text="UTC+03:00" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

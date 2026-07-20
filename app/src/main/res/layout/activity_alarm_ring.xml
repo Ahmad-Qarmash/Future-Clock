@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_base"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="@dimen/space_xl">
+
+    <TextView
+        android:id="@+id/text_alarm_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/neon_magenta"
+        android:textSize="@dimen/text_subtitle"
+        android:letterSpacing="0.2"
+        android:textStyle="bold"
+        tools:text="WAKE UP" />
+
+    <TextView
+        android:id="@+id/text_alarm_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l"
+        android:fontFamily="sans-serif-thin"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/clock_huge"
+        tools:text="07:30" />
+
+    <TextView
+        android:id="@+id/text_alarm_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_subtitle"
+        tools:text="Monday, January 1" />
+
+    <LinearLayout
+        android:id="@+id/challenge_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/space_xxl"
+        android:padding="@dimen/space_l"
+        android:background="@drawable/bg_neon_outline"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/text_challenge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_title"
+            tools:text="7 × 8 = ?" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            style="@style/Widget.FutureClock.TextInput">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_challenge_answer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/neon_cyan" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_snooze"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginBottom="@dimen/space_m"
+        android:text="@string/action_snooze"
+        app:backgroundTint="@color/bg_surface_alt"
+        android:textColor="@color/neon_cyan" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_dismiss"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="@string/action_dismiss"
+        app:backgroundTint="@color/neon_magenta"
+        android:textColor="@color/bg_base" />
+
+</LinearLayout>

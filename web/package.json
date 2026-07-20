@@ -1,0 +1,17 @@
+{
+  "name": "future-clock-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web preview site for the Future Clock Android app, with Playwright e2e tests.",
+  "scripts": {
+    "start": "npx http-server . -p 4173 -c-1 -s",
+    "serve": "npx http-server . -p 4173 -c-1 -s",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "playwright": "latest"
+  }
+}

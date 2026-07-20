@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- =================== Base =================== -->
+    <style name="Theme.FutureClock" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/neon_cyan</item>
+        <item name="colorOnPrimary">@color/bg_base</item>
+        <item name="colorPrimaryContainer">@color/bg_surface_alt</item>
+        <item name="colorOnPrimaryContainer">@color/neon_cyan</item>
+
+        <item name="colorSecondary">@color/neon_magenta</item>
+        <item name="colorOnSecondary">@color/bg_base</item>
+        <item name="colorSecondaryContainer">@color/bg_surface_alt</item>
+        <item name="colorOnSecondaryContainer">@color/neon_magenta</item>
+
+        <item name="colorTertiary">@color/neon_lime</item>
+        <item name="colorOnTertiary">@color/bg_base</item>
+
+        <item name="colorError">@color/neon_pink</item>
+        <item name="colorOnError">@color/bg_base</item>
+
+        <item name="android:colorBackground">@color/bg_base</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/divider</item>
+        <item name="colorOutlineVariant">@color/divider</item>
+
+        <item name="android:statusBarColor">@color/status_bar</item>
+        <item name="android:navigationBarColor">@color/nav_bar</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorTertiary">@color/text_tertiary</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.FutureClock.Dialog</item>
+        <item name="bottomNavigationStyle">@style/Widget.FutureClock.BottomNav</item>
+        <item name="materialButtonStyle">@style/Widget.FutureClock.Button</item>
+        <item name="textInputStyle">@style/Widget.FutureClock.TextInput</item>
+    </style>
+
+    <!-- =================== Alarm ring overlay =================== -->
+    <style name="Theme.FutureClock.Alarm" parent="Theme.FutureClock">
+        <item name="android:windowBackground">@color/bg_base</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
+    </style>
+
+    <!-- =================== Dialog (widget config) =================== -->
+    <style name="Theme.FutureClock.Dialog" parent="Theme.Material3.DayNight.Dialog.Alert">
+        <item name="colorPrimary">@color/neon_cyan</item>
+        <item name="colorOnPrimary">@color/bg_base</item>
+    </style>
+
+    <style name="ThemeOverlay.FutureClock.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">@color/neon_cyan</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+    </style>
+
+    <!-- =================== Bottom Nav =================== -->
+    <style name="Widget.FutureClock.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@color/bg_surface</item>
+        <item name="itemIconTint">@color/selector_bottom_nav</item>
+        <item name="itemTextColor">@color/selector_bottom_nav</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.FutureClock.BottomNav.Indicator</item>
+        <item name="elevation">0dp</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+
+    <style name="Widget.FutureClock.BottomNav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/ripple_neon</item>
+    </style>
+
+    <!-- =================== Buttons =================== -->
+    <style name="Widget.FutureClock.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="Widget.FutureClock.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="strokeColor">@color/neon_cyan</item>
+        <item name="android:textColor">@color/neon_cyan</item>
+    </style>
+
+    <style name="Widget.FutureClock.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/neon_cyan</item>
+    </style>
+
+    <!-- =================== TextInput =================== -->
+    <style name="Widget.FutureClock.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/neon_cyan</item>
+        <item name="hintTextColor">@color/neon_cyan</item>
+    </style>
+
+    <!-- =================== Card =================== -->
+    <style name="Widget.FutureClock.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/bg_surface</item>
+        <item name="cardCornerRadius">@dimen/card_radius</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/divider</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- =================== Text appearance =================== -->
+    <style name="TextAppearance.FutureClock.Display" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:fontFamily">sans-serif-thin</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.FutureClock.Huge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.FutureClock.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.FutureClock.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="TextAppearance.FutureClock.Caption" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <style name="TextAppearance.FutureClock.Neon" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">@color/neon_cyan</item>
+    </style>
+</resources>

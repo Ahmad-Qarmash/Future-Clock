@@ -1,0 +1,33 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+/app/build
+/app/release
+*.apk
+*.aab
+*.keystore
+google-services.json
+keystore.properties
+
+# Web preview / Playwright
+/web/node_modules/
+/web/test-results/
+/web/playwright-report/
+/web/blob-report/
+/web/playwright/.cache/
+/web/.cache/
+
+# OS
+Thumbs.db
+
+# IDE
+.vscode/
+.fleet/
+.idea/

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Future Clock — a cyberpunk neon Android clock app with live analog clock, world clock, alarms, timer, stopwatch, and four home-screen widgets." />
+  <meta name="theme-color" content="#0A0A1A" />
+  <title>Future Clock — Neon time, in your pocket</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230A0A1A'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%2300E5FF' stroke-width='3'/%3E%3Cline x1='32' y1='32' x2='32' y2='18' stroke='%23FF00E5' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='32' y1='32' x2='44' y2='32' stroke='%2300E5FF' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='32' y1='32' x2='46' y2='22' stroke='%23B6FF00' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner" role="alert">
+      <strong>Enable JavaScript to see the live clock.</strong>
+      The Future Clock preview site uses JavaScript to render the analog clock and home-screen widgets in your browser.
+    </div>
+  </noscript>
+
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Future Clock home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="28" height="28" focusable="false" aria-hidden="true">
+            <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2" />
+            <line x1="16" y1="16" x2="16" y2="9" stroke="#FF00E5" stroke-width="2" stroke-linecap="round" />
+            <line x1="16" y1="16" x2="22" y2="16" stroke="#00E5FF" stroke-width="1.5" stroke-linecap="round" />
+            <line x1="16" y1="16" x2="23" y2="11" stroke="#B6FF00" stroke-width="1" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span class="brand-text">Future<span class="brand-accent">Clock</span></span>
+      </a>
+      <nav class="primary-nav" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#widgets">Widgets</a>
+        <a href="#live">Live demo</a>
+        <a class="nav-cta" href="https://github.com/Ahmad-Qarmash/Future-Clock" rel="noopener noreferrer" target="_blank">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ============ HERO ============ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-bg" aria-hidden="true">
+        <div class="grid"></div>
+        <div class="glow glow-cyan"></div>
+        <div class="glow glow-magenta"></div>
+      </div>
+      <div class="container hero-inner">
+        <p class="eyebrow">Android · Native · Free</p>
+        <h1 id="hero-title" class="hero-title">
+          <span class="title-line-1">Future</span>
+          <span class="title-line-2">Clock</span>
+        </h1>
+        <p class="hero-tagline">Neon time, in your pocket.</p>
+        <p class="hero-sub">
+          A bold cyberpunk clock app for Android: live clock, world clock, alarms, timer, stopwatch, and four
+          production-quality home-screen widgets.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#live">Try the live demo ↓</a>
+          <a class="btn btn-ghost" href="https://github.com/Ahmad-Qarmash/Future-Clock" rel="noopener noreferrer" target="_blank">View on GitHub ↗</a>
+        </div>
+        <ul class="hero-meta" aria-label="Highlights">
+          <li><span class="dot dot-cyan"></span> Material 3</li>
+          <li><span class="dot dot-magenta"></span> 4 widgets</li>
+          <li><span class="dot dot-lime"></span> Min SDK 24</li>
+          <li><span class="dot dot-purple"></span> MIT</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section id="features" class="section" aria-labelledby="features-title">
+      <div class="container">
+        <header class="section-head">
+          <h2 id="features-title" class="section-title">Everything you need in a clock</h2>
+          <p class="section-sub">Five first-class tools, one cohesive neon experience.</p>
+        </header>
+        <ul class="feature-grid" role="list">
+          <li class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="#00E5FF" stroke-width="2" />
+                <line x1="12" y1="12" x2="12" y2="7" stroke="#FF00E5" stroke-width="2" stroke-linecap="round" />
+                <line x1="12" y1="12" x2="16" y2="12" stroke="#00E5FF" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3>Clock</h3>
+            <p>Large neon digits with ticking seconds, date, day, battery and timezone — all at a glance.</p>
+          </li>
+          <li class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="#00E5FF" stroke-width="2" />
+                <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" fill="none" stroke="#FF00E5" stroke-width="1.5" />
+              </svg>
+            </div>
+            <h3>World Clock</h3>
+            <p>Add any of 150+ curated cities with automatic day-difference indicators and live local time.</p>
+          </li>
+          <li class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+                <path d="M12 3a6 6 0 0 0-6 6v5l-2 3h16l-2-3V9a6 6 0 0 0-6-6z" fill="none" stroke="#B6FF00" stroke-width="2" stroke-linejoin="round" />
+                <path d="M10 20a2 2 0 0 0 4 0" fill="none" stroke="#B6FF00" stroke-width="2" />
+              </svg>
+            </div>
+            <h3>Alarms</h3>
+            <p>Repeat by day, custom label, gradual volume, vibration, snooze, and a math challenge to force wake-up.</p>
+          </li>
+          <li class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+                <circle cx="12" cy="13" r="8" fill="none" stroke="#00E5FF" stroke-width="2" />
+                <path d="M12 13l4-4" stroke="#FF00E5" stroke-width="2" stroke-linecap="round" />
+                <path d="M9 3h6M12 3v3" stroke="#B6FF00" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3>Timer</h3>
+            <p>Circular neon progress, presets (1/3/5/10/30 min), foreground service, system notification with pause/reset.</p>
+          </li>
+          <li class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" focusable="false">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="#00E5FF" stroke-width="2" />
+                <path d="M12 12l5-2" stroke="#FF00E5" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 12l-2 5" stroke="#B6FF00" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3>Stopwatch</h3>
+            <p>Sub-second precision, lap history, share via system intent. Backgrounds cleanly with a foreground service.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ WIDGETS ============ -->
+    <section id="widgets" class="section section-alt" aria-labelledby="widgets-title">
+      <div class="container">
+        <header class="section-head">
+          <h2 id="widgets-title" class="section-title">Four home-screen widgets</h2>
+          <p class="section-sub">Production-quality widgets that tick every minute, share the same renderer, and respect your battery.</p>
+        </header>
+        <ul class="widget-grid" role="list" data-testid="widget-showcase">
+          <li class="widget-card">
+            <h3>Analog</h3>
+            <p class="widget-desc">Cyberpunk clock face with neon hands.</p>
+            <div class="widget-frame">
+              <canvas data-widget="analog" data-testid="widget-canvas-analog" width="240" height="240" aria-label="Analog clock widget preview"></canvas>
+            </div>
+          </li>
+          <li class="widget-card">
+            <h3>Digital</h3>
+            <p class="widget-desc">Bold neon HH:MM with day and date.</p>
+            <div class="widget-frame widget-frame-wide">
+              <canvas data-widget="digital" data-testid="widget-canvas-digital" width="320" height="120" aria-label="Digital clock widget preview"></canvas>
+            </div>
+          </li>
+          <li class="widget-card">
+            <h3>World</h3>
+            <p class="widget-desc">1–3 cities, each on local time.</p>
+            <div class="widget-frame widget-frame-wide">
+              <canvas data-widget="world" data-testid="widget-canvas-world" width="320" height="160" aria-label="World clock widget preview"></canvas>
+            </div>
+          </li>
+          <li class="widget-card">
+            <h3>Next Alarm</h3>
+            <p class="widget-desc">Your next alarm at a glance.</p>
+            <div class="widget-frame widget-frame-wide">
+              <canvas data-widget="next-alarm" data-testid="widget-canvas-next-alarm" width="320" height="140" aria-label="Next alarm widget preview"></canvas>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ LIVE DEMO ============ -->
+    <section id="live" class="section" aria-labelledby="live-title">
+      <div class="container live-inner">
+        <div class="live-copy">
+          <h2 id="live-title" class="section-title">Try the analog clock</h2>
+          <p class="section-sub">
+            This is the same rendering logic used in-app and inside the home-screen analog widget, ported
+            line-for-line to JavaScript Canvas. The face ticks every animation frame using
+            <code>requestAnimationFrame</code>.
+          </p>
+          <dl class="live-facts">
+            <div><dt>Face</dt><dd>#0F0F22</dd></div>
+            <div><dt>Ring</dt><dd>Neon cyan</dd></div>
+            <div><dt>Hour hand</dt><dd>Neon magenta</dd></div>
+            <div><dt>Minute hand</dt><dd>Neon cyan</dd></div>
+            <div><dt>Second hand</dt><dd>Neon lime · glow</dd></div>
+          </dl>
+          <p class="live-note" id="live-clock-time" aria-live="polite" aria-atomic="true">—</p>
+        </div>
+        <div class="live-clock-wrap">
+          <noscript>
+            <p class="noscript-inline">Enable JavaScript to see the live clock.</p>
+          </noscript>
+          <canvas id="live-clock" data-testid="live-clock" width="420" height="420" aria-label="Live analog clock" role="img"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <p class="footer-brand">Future Clock — <span class="text-muted">neon time, in your pocket</span></p>
+      <ul class="footer-links" role="list">
+        <li><a href="https://github.com/Ahmad-Qarmash/Future-Clock" rel="noopener noreferrer" target="_blank" data-testid="github-link">GitHub ↗</a></li>
+        <li><a href="https://github.com/Ahmad-Qarmash/Future-Clock/blob/main/LICENSE" rel="noopener noreferrer" target="_blank">MIT License</a></li>
+        <li><a href="https://github.com/Ahmad-Qarmash/Future-Clock/blob/main/WIDGETS.md" rel="noopener noreferrer" target="_blank">Widgets</a></li>
+      </ul>
+      <p class="footer-meta">© Future Clock · Built with Canvas + a love of neon.</p>
+    </div>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

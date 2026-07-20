@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="@dimen/space_xl">
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/preset_chips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:chipSpacingHorizontal="6dp"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_1m"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1 min" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_3m"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3 min" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_5m"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5 min" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_10m"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10 min" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_30m"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30 min" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <com.futureclock.app.ui.views.CircularTimerView
+        android:id="@+id/circular_timer"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_marginTop="@dimen/space_xl" />
+
+    <TextView
+        android:id="@+id/text_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l"
+        android:textColor="@color/text_tertiary"
+        android:textSize="@dimen/text_subtitle"
+        android:letterSpacing="0.15"
+        android:textStyle="bold"
+        tools:text="READY" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_reset"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/space_s"
+            android:text="@string/action_reset"
+            style="@style/Widget.FutureClock.Button.Outlined" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_primary"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/space_s"
+            android:text="@string/action_start"
+            app:backgroundTint="@color/neon_cyan"
+            android:textColor="@color/bg_base" />
+    </LinearLayout>
+</LinearLayout>
