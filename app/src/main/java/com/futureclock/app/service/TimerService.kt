@@ -1,14 +1,17 @@
 package com.futureclock.app.service
 
+import android.Manifest
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.CountDownTimer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
 import com.futureclock.app.ads.AdManager
@@ -51,6 +54,12 @@ class TimerService : Service() {
         countDownTimer?.cancel()
         val remaining = if (_state.value.state == State.PAUSED) _state.value.remainingMs else totalMs
         finishedShown = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            stopSelf()
+            return
+        }
         startForeground(NotificationIds.TIMER, buildNotification(remaining, getString(R.string.timer_running)))
         countDownTimer = object : CountDownTimer(remaining, 100L) {
             override fun onTick(remaining: Long) {
@@ -107,6 +116,11 @@ class TimerService : Service() {
     }
 
     private fun updateNotification(remaining: Long, status: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         val nm = androidx.core.app.NotificationManagerCompat.from(this)
         if (nm.areNotificationsEnabled()) {
             nm.notify(NotificationIds.TIMER, buildNotification(remaining, status))

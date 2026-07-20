@@ -47,17 +47,30 @@ class StopwatchFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             StopwatchService.state.collectLatest { state ->
-                val total = state.totalMs
-                binding.chronometer.base = SystemClock.elapsedRealtime() - total
-                val formatted = StopwatchFormat.format(total, withMillis = true)
-                val parts = formatted.split(".")
-                binding.chronometer.text = parts[0]
-                binding.textMillis.text = if (parts.size > 1) ".${parts[1]}" else ".00"
                 binding.btnToggle.text = getString(if (state.running) R.string.action_pause else R.string.action_start)
                 lapAdapter.submit(state.laps)
                 binding.recyclerLaps.visibility = if (state.laps.isEmpty()) View.GONE else View.VISIBLE
+                render(state)
             }
         }
+        // Tick the digits while running: the StateFlow only emits on state
+        // changes, so we re-render on an interval to keep the display live.
+        viewLifecycleOwner.lifecycleScope.launch {
+            while (true) {
+                val s = StopwatchService.state.value
+                if (s.running) render(s)
+                kotlinx.coroutines.delay(33L)
+            }
+        }
+    }
+
+    private fun render(state: StopwatchService.State) {
+        val total = state.totalMs
+        binding.chronometer.base = SystemClock.elapsedRealtime() - total
+        val formatted = StopwatchFormat.format(total, withMillis = true)
+        val parts = formatted.split(".")
+        binding.chronometer.text = parts[0]
+        binding.textMillis.text = if (parts.size > 1) ".${parts[1]}" else ".00"
     }
 
     private fun share() {

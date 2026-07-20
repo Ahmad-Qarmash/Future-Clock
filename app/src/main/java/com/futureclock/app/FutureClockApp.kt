@@ -5,12 +5,11 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import com.futureclock.app.ads.AdManager
 import com.futureclock.app.data.db.AppDatabase
 import com.futureclock.app.data.prefs.SettingsRepository
 import com.futureclock.app.notification.NotificationChannels
 import com.futureclock.app.widget.WidgetUpdateScheduler
-import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -19,7 +18,11 @@ import kotlinx.coroutines.launch
 class FutureClockApp : Application() {
 
     val applicationScope: CoroutineScope by lazy {
-        CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val handler = CoroutineExceptionHandler { _, t ->
+            // Log background coroutine failures without crashing the app.
+            android.util.Log.w("FutureClockApp", "Background coroutine failed", t)
+        }
+        CoroutineScope(SupervisorJob() + Dispatchers.Default + handler)
     }
 
     val database: AppDatabase by lazy {
@@ -35,14 +38,6 @@ class FutureClockApp : Application() {
         instance = this
 
         createNotificationChannels()
-
-        // Initialize AdMob
-        applicationScope.launch {
-            try {
-                MobileAds.initialize(this@FutureClockApp) {}
-                AdManager.initialize(this@FutureClockApp)
-            } catch (_: Throwable) { /* ads unavailable in dev */ }
-        }
 
         // Start periodic widget updates. The scheduler itself catches
         // SecurityException from missing exact-alarm permission, but wrap it

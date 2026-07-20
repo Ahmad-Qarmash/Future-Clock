@@ -14,7 +14,8 @@
         android:layout_height="wrap_content"
         app:chipSpacingHorizontal="6dp"
         app:singleSelection="true"
-        app:selectionRequired="true">
+        app:selectionRequired="true"
+        app:chipSpacingVertical="6dp">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_1m"

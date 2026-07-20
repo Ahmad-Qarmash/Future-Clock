@@ -5,9 +5,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -23,12 +25,12 @@ class SettingsRepository(private val context: Context) {
     private val keyGradualVol = booleanPreferencesKey("gradual_volume")
     private val keyLastTab = intPreferencesKey("last_tab")
 
-    val use24h: Flow<Boolean> = ds.data.map { it[keyUse24h] ?: true }
-    val showSeconds: Flow<Boolean> = ds.data.map { it[keyShowSeconds] ?: true }
-    val snoozeMinutes: Flow<Int> = ds.data.map { it[keySnoozeMin] ?: 5 }
-    val themeMode: Flow<Int> = ds.data.map { it[keyThemeMode] ?: 0 } // 0=system, 1=light, 2=dark
-    val gradualVolume: Flow<Boolean> = ds.data.map { it[keyGradualVol] ?: true }
-    val lastTab: Flow<Int> = ds.data.map { it[keyLastTab] ?: 0 }
+    val use24h: Flow<Boolean> = ds.data.catch { emit(emptyPreferences()) }.map { it[keyUse24h] ?: true }
+    val showSeconds: Flow<Boolean> = ds.data.catch { emit(emptyPreferences()) }.map { it[keyShowSeconds] ?: true }
+    val snoozeMinutes: Flow<Int> = ds.data.catch { emit(emptyPreferences()) }.map { it[keySnoozeMin] ?: 5 }
+    val themeMode: Flow<Int> = ds.data.catch { emit(emptyPreferences()) }.map { it[keyThemeMode] ?: 0 } // 0=system, 1=light, 2=dark
+    val gradualVolume: Flow<Boolean> = ds.data.catch { emit(emptyPreferences()) }.map { it[keyGradualVol] ?: true }
+    val lastTab: Flow<Int> = ds.data.catch { emit(emptyPreferences()) }.map { it[keyLastTab] ?: 0 }
 
     suspend fun setUse24h(v: Boolean) = ds.edit { it[keyUse24h] = v }
     suspend fun setShowSeconds(v: Boolean) = ds.edit { it[keyShowSeconds] = v }

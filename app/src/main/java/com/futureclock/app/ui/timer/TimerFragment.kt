@@ -68,8 +68,14 @@ class TimerFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             TimerService.state.collectLatest { state ->
-                binding.circularTimer.totalMs = if (state.totalMs > 0) state.totalMs else totalMs
-                binding.circularTimer.remainingMs = state.remainingMs
+                val total = if (state.totalMs > 0) state.totalMs else totalMs
+                // In IDLE the service reports 0/0; show the selected preset instead of 00:00 DONE.
+                val remaining = when (state.state) {
+                    TimerService.State.IDLE -> total
+                    else -> state.remainingMs
+                }
+                binding.circularTimer.totalMs = total
+                binding.circularTimer.remainingMs = remaining
                 binding.textStatus.text = when (state.state) {
                     TimerService.State.IDLE -> getString(R.string.timer_idle)
                     TimerService.State.RUNNING -> getString(R.string.timer_running)

@@ -40,6 +40,9 @@ class ClockFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.analogClock.timeZone = TimeZone.getDefault()
+        binding.btnSettings.setOnClickListener {
+            (activity as? com.futureclock.app.MainActivity)?.openSettings()
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             val app = requireContext().applicationContext as FutureClockApp

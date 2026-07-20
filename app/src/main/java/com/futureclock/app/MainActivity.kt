@@ -4,10 +4,8 @@ import android.Manifest
 import android.app.AlarmManager
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -85,12 +83,32 @@ class MainActivity : AppCompatActivity() {
         R.id.nav_alarm -> AlarmFragment()
         R.id.nav_timer -> TimerFragment()
         R.id.nav_stopwatch -> StopwatchFragment()
-        R.id.nav_settings -> SettingsFragment()
         else -> ClockFragment()
     }
 
+    /** Opens the Settings screen on top of the current tab (accessible from the Clock tab gear). */
+    fun openSettings() {
+        supportFragmentManager.beginTransaction()
+            .setReorderingAllowed(true)
+            .replace(R.id.fragment_container, SettingsFragment(), "tab_settings")
+            .addToBackStack(null)
+            .commit()
+    }
+
+
     private fun setupBannerAd() {
-        AdManager.createBanner(this, binding.adContainer)
+        val playServices = com.google.android.gms.common.GoogleApiAvailability.getInstance()
+            .isGooglePlayServicesAvailable(this)
+        if (playServices != com.google.android.gms.common.ConnectionResult.SUCCESS) {
+            // No Google Play Services: ads won't work, so hide the slot and keep the app open.
+            binding.adContainer.visibility = android.view.View.GONE
+            return
+        }
+        try {
+            AdManager.createBanner(this, binding.adContainer)
+        } catch (_: Throwable) {
+            binding.adContainer.visibility = android.view.View.GONE
+        }
     }
 
     private fun requestPermissionsIfNeeded() {
@@ -101,15 +119,12 @@ class MainActivity : AppCompatActivity() {
                 requestNotificationPermission.launch(perm)
             }
         }
-        // Exact alarm (API 31+)
+        // Exact alarm (API 31+): warn once per launch but never kick the user out
+        // of the app. Opening Settings here looked like a crash on first run.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val am = getSystemService(ALARM_SERVICE) as AlarmManager
             if (!am.canScheduleExactAlarms()) {
                 Toast.makeText(this, R.string.perm_exact_alarm_rationale, Toast.LENGTH_LONG).show()
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    data = Uri.fromParts("package", packageName, null)
-                }
-                try { startActivity(intent) } catch (_: Throwable) {}
             }
         }
     }

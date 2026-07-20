@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -83,7 +84,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/clock_battery_format"
+                        android:text="BATTERY"
                         android:textColor="@color/text_tertiary"
                         android:textSize="@dimen/text_caption"
                         android:letterSpacing="0.1"
@@ -132,4 +133,15 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <ImageButton
+        android:id="@+id/btn_settings"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="@dimen/space_l"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_settings"
+        app:tint="@color/text_secondary"
+        android:contentDescription="@string/tab_settings" />
 </FrameLayout>

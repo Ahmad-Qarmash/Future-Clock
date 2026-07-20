@@ -1,14 +1,17 @@
 package com.futureclock.app.service
 
+import android.Manifest
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
 import com.futureclock.app.notification.Actions
@@ -93,6 +96,12 @@ class StopwatchService : Service() {
     }
 
     private fun startForegroundIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            stopSelf()
+            return
+        }
         val notification = buildNotification()
         startForeground(NotificationIds.STOPWATCH, notification)
     }
@@ -108,6 +117,11 @@ class StopwatchService : Service() {
     }
 
     private fun updateNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         val nm = androidx.core.app.NotificationManagerCompat.from(this)
         if (nm.areNotificationsEnabled()) {
             nm.notify(NotificationIds.STOPWATCH, buildNotification())

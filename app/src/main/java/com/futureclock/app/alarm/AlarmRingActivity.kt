@@ -178,7 +178,12 @@ class AlarmRingActivity : AppCompatActivity() {
                 getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             }
             val pattern = longArrayOf(0, 400, 800)
-            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(pattern, 0)
+            }
         } catch (_: Throwable) { /* no vibrator on this device */ }
     }
 

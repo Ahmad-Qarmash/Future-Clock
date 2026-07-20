@@ -44,6 +44,7 @@ class WorldAdapter(
         val cal = Calendar.getInstance(zone)
         val h = cal.get(Calendar.HOUR_OF_DAY)
         val m = cal.get(Calendar.MINUTE)
+        holder.binding.cityFlag.text = city.flag
         holder.binding.cityName.text = city.displayName
         holder.binding.cityCountry.text = city.country
         holder.binding.cityTime.text = TimeFormat.formatTime(use24h = true, hour = h, minute = m)

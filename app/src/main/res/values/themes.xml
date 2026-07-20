@@ -68,13 +68,8 @@
         <item name="android:background">@color/bg_surface</item>
         <item name="itemIconTint">@color/selector_bottom_nav</item>
         <item name="itemTextColor">@color/selector_bottom_nav</item>
-        <item name="itemActiveIndicatorStyle">@style/Widget.FutureClock.BottomNav.Indicator</item>
         <item name="elevation">0dp</item>
         <item name="labelVisibilityMode">labeled</item>
-    </style>
-
-    <style name="Widget.FutureClock.BottomNav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">@color/ripple_neon</item>
     </style>
 
     <!-- =================== Buttons =================== -->

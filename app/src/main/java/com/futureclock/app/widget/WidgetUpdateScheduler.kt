@@ -25,7 +25,7 @@ object WidgetUpdateScheduler {
     fun scheduleNext(context: Context) {
         val now = System.currentTimeMillis()
         val nextMinute = ((now / 60_000L) + 1) * 60_000L + 1_500L
-        val triggerAtElapsed = nextMinute - SystemClock.elapsedRealtime()
+        val triggerAtElapsed = SystemClock.elapsedRealtime() + (nextMinute - now)
         val pi = pendingIntent(context)
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val canExact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
