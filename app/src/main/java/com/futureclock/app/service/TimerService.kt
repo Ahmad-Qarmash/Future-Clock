@@ -102,7 +102,7 @@ class TimerService : Service() {
             .setContentIntent(openIntent)
             .addAction(R.drawable.ic_pause, getString(R.string.action_pause), pausePi)
             .addAction(R.drawable.ic_reset, getString(R.string.action_reset), resetPi)
-            .setCategory(NotificationCompat.CATEGORY_TIMER)
+            .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .build()
     }
 

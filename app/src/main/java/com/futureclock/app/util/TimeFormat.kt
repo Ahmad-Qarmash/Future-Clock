@@ -78,7 +78,7 @@ object TimeFormat {
         val zoneDay = zoneCal.get(Calendar.DAY_OF_YEAR)
         val zoneYear = zoneCal.get(Calendar.YEAR)
         return if (zoneYear == deviceYear) zoneDay - deviceDay
-        else (zoneCal.timeInMillis - deviceCal.timeInMillis) / (24L * 60 * 60 * 1000)
+        else ((zoneCal.timeInMillis - deviceCal.timeInMillis) / (24L * 60 * 60 * 1000)).toInt()
     }
 }
 

@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupNav()
+        setupNav(savedInstanceState)
         setupBannerAd()
         requestPermissionsIfNeeded()
         handleDeepLink(intent)
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         handleDeepLink(intent)
     }
 
-    private fun setupNav() {
+    private fun setupNav(savedInstanceState: Bundle?) {
         binding.bottomNav.setOnItemSelectedListener { item ->
             selectTab(item.itemId)
             AdManager.maybeShowInterstitial(this, AdManager.Trigger.TAB_CHANGE)
