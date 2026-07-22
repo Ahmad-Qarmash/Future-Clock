@@ -1,45 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ===== Cyberpunk Neon palette ===== -->
-    <color name="bg_base">#0A0A1A</color>
-    <color name="bg_surface">#11112A</color>
-    <color name="bg_surface_alt">#1A1A3A</color>
-    <color name="bg_overlay">#22224A</color>
+    <!-- Future Clock semantic palette — light mode -->
+    <color name="bg_base">#F4F6FA</color>
+    <color name="bg_surface">#FFFFFF</color>
+    <color name="bg_surface_alt">#EAF0F7</color>
+    <color name="bg_overlay">#DFE7F1</color>
 
-    <color name="neon_cyan">#00E5FF</color>
-    <color name="neon_magenta">#FF00E5</color>
-    <color name="neon_lime">#B6FF00</color>
-    <color name="neon_purple">#9D00FF</color>
-    <color name="neon_orange">#FF6E00</color>
-    <color name="neon_pink">#FF1493</color>
+    <color name="brand_primary">#315EDB</color>
+    <color name="brand_primary_container">#DCE5FF</color>
+    <color name="on_brand_primary">#FFFFFF</color>
+    <color name="on_brand_primary_container">#17326F</color>
+    <color name="brand_secondary">#C84F46</color>
+    <color name="brand_secondary_container">#FFE2DE</color>
+    <color name="on_brand_secondary">#FFFFFF</color>
+    <color name="brand_tertiary">#147A70</color>
 
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#B0B0D0</color>
-    <color name="text_tertiary">#6E6E94</color>
-    <color name="text_disabled">#3F3F66</color>
+    <color name="text_primary">#172033</color>
+    <color name="text_secondary">#4D5B70</color>
+    <color name="text_tertiary">#6C788A</color>
+    <color name="text_disabled">#9AA5B5</color>
+    <color name="divider">#D7E0EA</color>
+    <color name="focus_ring">#7896EE</color>
 
-    <color name="divider">#22224A</color>
+    <color name="status_success">#237554</color>
+    <color name="status_success_container">#D7F4E6</color>
+    <color name="status_warning">#8A5700</color>
+    <color name="status_warning_container">#FFE8B0</color>
+    <color name="on_status_warning">#332000</color>
+    <color name="status_error">#B3261E</color>
+    <color name="status_error_container">#FFDAD6</color>
+    <color name="status_info">#315EDB</color>
+    <color name="status_info_container">#DCE5FF</color>
 
-    <color name="widget_bg">#0F0F22</color>
-    <color name="widget_bg_alt">#16163A</color>
-    <color name="widget_stroke">#00E5FF</color>
-    <color name="widget_text">#FFFFFF</color>
-    <color name="widget_text_muted">#9090C0</color>
+    <color name="status_bar">#F4F6FA</color>
+    <color name="nav_bar">#FAFBFD</color>
+    <color name="scrim">#66101A2A</color>
 
-    <color name="status_bar">#08081A</color>
-    <color name="nav_bar">#0A0A1A</color>
+    <!-- Compatibility aliases; all layouts now inherit semantic values. -->
+    <color name="neon_cyan">@color/brand_primary</color>
+    <color name="neon_magenta">@color/brand_secondary</color>
+    <color name="neon_lime">@color/status_success</color>
+    <color name="neon_purple">@color/brand_primary</color>
+    <color name="neon_orange">@color/status_warning</color>
+    <color name="neon_pink">@color/status_error</color>
+    <color name="ripple_neon">#1F315EDB</color>
 
-    <color name="ripple_neon">#3300E5FF</color>
+    <!-- Widgets use a controlled dark canvas for consistent launcher legibility. -->
+    <color name="widget_bg">#121A27</color>
+    <color name="widget_bg_alt">#1A2535</color>
+    <color name="widget_stroke">#3A4960</color>
+    <color name="widget_text">#F4F7FB</color>
+    <color name="widget_text_muted">#AAB5C5</color>
+    <color name="widget_accent">#8EAAFF</color>
 
-    <!-- Light theme (still neon but inverted) -->
-    <color name="bg_base_light">#F5F5FF</color>
-    <color name="bg_surface_light">#FFFFFF</color>
-    <color name="bg_surface_alt_light">#EBEBFF</color>
-    <color name="text_primary_light">#0A0A1A</color>
-    <color name="text_secondary_light">#3D3D5C</color>
-    <color name="text_tertiary_light">#6E6E94</color>
-    <color name="divider_light">#D0D0E8</color>
-    <color name="widget_bg_light">#FFFFFF</color>
-    <color name="widget_text_light">#0A0A1A</color>
-    <color name="widget_text_muted_light">#5A5A85</color>
+    <color name="ic_launcher_background">#0D1833</color>
 </resources>

@@ -3,159 +3,247 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/space_l">
+        android:paddingHorizontal="@dimen/page_padding"
+        android:paddingTop="@dimen/space_xl"
+        android:paddingBottom="@dimen/space_xxxl">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tab_settings"
-            android:textColor="@color/neon_cyan"
-            android:textSize="@dimen/text_headline"
-            android:letterSpacing="0.08"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.FutureClock.ScreenTitle" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_l"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/settings_subtitle"
+            android:textAppearance="@style/TextAppearance.FutureClock.Body" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
             android:text="@string/settings_appearance"
-            android:textColor="@color/text_tertiary"
-            android:textSize="@dimen/text_caption"
-            android:letterSpacing="0.2"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.FutureClock.Section" />
 
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FutureClock.Card.Flat"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="@dimen/space_m">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_time_format"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_subtitle" />
-
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_24h"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="@dimen/space_m">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_show_seconds"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_subtitle" />
-
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_seconds"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_l"
-            android:text="@string/settings_alarms"
-            android:textColor="@color/neon_cyan"
-            android:textSize="@dimen/text_caption"
-            android:letterSpacing="0.2"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingVertical="@dimen/space_m">
+            android:layout_marginTop="@dimen/space_m">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="@dimen/space_l">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/settings_snooze_duration"
-                    android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_subtitle" />
+                    android:text="@string/settings_appearance_description"
+                    android:textAppearance="@style/TextAppearance.FutureClock.Body" />
 
-                <TextView
-                    android:id="@+id/text_snooze_value"
-                    android:layout_width="wrap_content"
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/theme_group"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/neon_cyan"
-                    android:textSize="@dimen/text_subtitle"
-                    tools:text="5 min" />
+                    android:layout_marginTop="@dimen/space_l"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/theme_system"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:text="@string/settings_theme_system_short" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/theme_light"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:text="@string/settings_theme_light_short" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/theme_dark"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:text="@string/settings_theme_dark_short" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
             </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.slider.Slider
-                android:id="@+id/slider_snooze"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/settings_time_section"
+            android:textAppearance="@style/TextAppearance.FutureClock.Section" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FutureClock.Card.Flat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:valueFrom="1"
-                android:valueTo="30"
-                android:stepSize="1"
-                android:value="5" />
-        </LinearLayout>
+                android:orientation="vertical">
 
-        <View
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="64dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/space_l">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_time_format"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_subtitle" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switch_24h"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="@dimen/space_l" android:background="@color/divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="64dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/space_l">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_show_seconds"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_subtitle" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switch_seconds"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/settings_alarms"
+            android:textAppearance="@style/TextAppearance.FutureClock.Section" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FutureClock.Card.Flat"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/space_l">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/settings_snooze_duration"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_subtitle" />
+
+                    <TextView
+                        android:id="@+id/text_snooze_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_status_info"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="@dimen/text_body"
+                        android:textStyle="bold"
+                        tools:text="5 min" />
+                </LinearLayout>
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/slider_snooze"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:stepSize="1"
+                    android:value="5"
+                    android:valueFrom="1"
+                    android:valueTo="30" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_l"
+            android:layout_marginTop="@dimen/space_xl"
             android:text="@string/settings_about"
-            android:textColor="@color/neon_cyan"
-            android:textSize="@dimen/text_caption"
-            android:letterSpacing="0.2"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.FutureClock.Section" />
 
-        <TextView
-            android:id="@+id/text_version"
-            android:layout_width="wrap_content"
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FutureClock.Card.Flat"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_m"
-            android:textColor="@color/text_secondary"
-            android:textSize="@dimen/text_body"
-            tools:text="Version 1.0.0" />
+            android:layout_marginTop="@dimen/space_m">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_s"
-            android:text="@string/app_tagline"
-            android:textColor="@color/text_tertiary"
-            android:textSize="@dimen/text_caption" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/space_l">
 
+                <TextView
+                    android:id="@+id/text_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_subtitle"
+                    android:textStyle="bold"
+                    tools:text="Version 1.0.0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/app_tagline"
+                    android:textAppearance="@style/TextAppearance.FutureClock.Body" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </ScrollView>

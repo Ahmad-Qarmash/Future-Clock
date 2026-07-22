@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Future Clock semantic palette — dark mode -->
+    <color name="bg_base">#0E1420</color>
+    <color name="bg_surface">#151D2B</color>
+    <color name="bg_surface_alt">#1C2636</color>
+    <color name="bg_overlay">#263246</color>
+
+    <color name="brand_primary">#8EAAFF</color>
+    <color name="brand_primary_container">#253B73</color>
+    <color name="on_brand_primary">#10265F</color>
+    <color name="on_brand_primary_container">#DEE6FF</color>
+    <color name="brand_secondary">#FF8B7B</color>
+    <color name="brand_secondary_container">#6B2B28</color>
+    <color name="on_brand_secondary">#5B1815</color>
+    <color name="brand_tertiary">#67D5C4</color>
+
+    <color name="text_primary">#F4F7FB</color>
+    <color name="text_secondary">#C3CBD8</color>
+    <color name="text_tertiary">#909CAF</color>
+    <color name="text_disabled">#647083</color>
+    <color name="divider">#2D394C</color>
+    <color name="focus_ring">#AFC1FF</color>
+
+    <color name="status_success">#72D6A7</color>
+    <color name="status_success_container">#173F30</color>
+    <color name="status_warning">#FFCB67</color>
+    <color name="status_warning_container">#493715</color>
+    <color name="on_status_warning">#2A1D00</color>
+    <color name="status_error">#FFB4AB</color>
+    <color name="status_error_container">#6D2925</color>
+    <color name="status_info">#AFC1FF</color>
+    <color name="status_info_container">#253B73</color>
+
+    <color name="status_bar">#0E1420</color>
+    <color name="nav_bar">#111925</color>
+    <color name="scrim">#99000000</color>
+
+    <color name="neon_cyan">@color/brand_primary</color>
+    <color name="neon_magenta">@color/brand_secondary</color>
+    <color name="neon_lime">@color/status_success</color>
+    <color name="neon_purple">@color/brand_primary</color>
+    <color name="neon_orange">@color/status_warning</color>
+    <color name="neon_pink">@color/status_error</color>
+    <color name="ripple_neon">#298EAAFF</color>
+</resources>

@@ -103,6 +103,75 @@ class AlarmMathTest {
         assertEquals("Daily alarm with today's 08:00 past must fire tomorrow 08:00", expected, actual)
     }
 
+    @Test
+    fun californiaAlarm_deviceInIsrael_targetsEightPmLosAngeles() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Jerusalem"))
+        val now = utcTimestamp(2024, Calendar.JANUARY, 15, 0, 0, 0)
+        val expected = utcTimestamp(2024, Calendar.JANUARY, 15, 4, 0, 0)
+
+        val actual = AlarmMath.nextTrigger(
+            now, 20, 0, 0, "America/Los_Angeles"
+        )
+
+        assertEquals("20:00 California in winter is 04:00 UTC", expected, actual)
+    }
+
+    @Test
+    fun californiaAlarm_deviceTimezoneChange_doesNotChangeTargetInstant() {
+        val now = utcTimestamp(2024, Calendar.JANUARY, 15, 0, 0, 0)
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Jerusalem"))
+        val fromIsrael = AlarmMath.nextTrigger(now, 20, 0, 0, "America/Los_Angeles")
+
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Tokyo"))
+        val afterTravel = AlarmMath.nextTrigger(now, 20, 0, 0, "America/Los_Angeles")
+
+        assertEquals("Saved IANA zone must make device timezone irrelevant", fromIsrael, afterTravel)
+    }
+
+    @Test
+    fun californiaDailyAlarm_springDst_keepsEightPmWallTime() {
+        val daily = 0x7F
+        val beforeDst = utcTimestamp(2024, Calendar.MARCH, 9, 12, 0, 0)
+        val afterFirstRing = utcTimestamp(2024, Calendar.MARCH, 10, 5, 0, 0)
+
+        val winterTrigger = AlarmMath.nextTrigger(
+            beforeDst, 20, 0, daily, "America/Los_Angeles"
+        )
+        val daylightTrigger = AlarmMath.nextTrigger(
+            afterFirstRing, 20, 0, daily, "America/Los_Angeles"
+        )
+
+        assertEquals(utcTimestamp(2024, Calendar.MARCH, 10, 4, 0, 0), winterTrigger)
+        assertEquals(utcTimestamp(2024, Calendar.MARCH, 11, 3, 0, 0), daylightTrigger)
+        assertEquals(
+            "DST changes the UTC instant while preserving 20:00 California",
+            23L * 60 * 60 * 1000,
+            daylightTrigger - winterTrigger
+        )
+    }
+
+    @Test
+    fun californiaDailyAlarm_fallDst_keepsEightPmWallTime() {
+        val daily = 0x7F
+        val beforeDstEnds = utcTimestamp(2024, Calendar.NOVEMBER, 2, 12, 0, 0)
+        val afterFirstRing = utcTimestamp(2024, Calendar.NOVEMBER, 3, 4, 0, 0)
+
+        val daylightTrigger = AlarmMath.nextTrigger(
+            beforeDstEnds, 20, 0, daily, "America/Los_Angeles"
+        )
+        val winterTrigger = AlarmMath.nextTrigger(
+            afterFirstRing, 20, 0, daily, "America/Los_Angeles"
+        )
+
+        assertEquals(utcTimestamp(2024, Calendar.NOVEMBER, 3, 3, 0, 0), daylightTrigger)
+        assertEquals(utcTimestamp(2024, Calendar.NOVEMBER, 4, 4, 0, 0), winterTrigger)
+        assertEquals(
+            "DST ending changes the UTC instant while preserving 20:00 California",
+            25L * 60 * 60 * 1000,
+            winterTrigger - daylightTrigger
+        )
+    }
+
     // ---------- formatDays ----------
 
     @Test

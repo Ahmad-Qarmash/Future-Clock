@@ -7,23 +7,26 @@
     <dimen name="space_l">16dp</dimen>
     <dimen name="space_xl">24dp</dimen>
     <dimen name="space_xxl">32dp</dimen>
+    <dimen name="space_xxxl">48dp</dimen>
+    <dimen name="page_padding">20dp</dimen>
+    <dimen name="touch_target">48dp</dimen>
 
-    <dimen name="text_caption">12sp</dimen>
-    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_caption">13sp</dimen>
+    <dimen name="text_body">15sp</dimen>
     <dimen name="text_subtitle">16sp</dimen>
-    <dimen name="text_title">20sp</dimen>
-    <dimen name="text_headline">28sp</dimen>
+    <dimen name="text_title">22sp</dimen>
+    <dimen name="text_headline">30sp</dimen>
 
-    <dimen name="clock_huge">96sp</dimen>
+    <dimen name="clock_huge">84sp</dimen>
     <dimen name="clock_big">72sp</dimen>
     <dimen name="clock_medium">48sp</dimen>
 
-    <dimen name="card_radius">16dp</dimen>
-    <dimen name="card_radius_l">20dp</dimen>
-    <dimen name="card_radius_s">10dp</dimen>
+    <dimen name="card_radius">18dp</dimen>
+    <dimen name="card_radius_l">24dp</dimen>
+    <dimen name="card_radius_s">12dp</dimen>
 
     <dimen name="ad_banner_height">50dp</dimen>
-    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="bottom_nav_height">72dp</dimen>
 
     <dimen name="widget_corner">18dp</dimen>
     <dimen name="widget_stroke">1dp</dimen>

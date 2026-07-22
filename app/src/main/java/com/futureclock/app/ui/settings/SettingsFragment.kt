@@ -10,6 +10,7 @@ import com.futureclock.app.BuildConfig
 import com.futureclock.app.FutureClockApp
 import com.futureclock.app.R
 import com.futureclock.app.databinding.FragmentSettingsBinding
+import com.futureclock.app.ui.theme.ThemeController
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -35,6 +36,14 @@ class SettingsFragment : Fragment() {
             val snooze = settings.snoozeMinutes.first()
             binding.sliderSnooze.value = snooze.toFloat()
             binding.textSnoozeValue.text = "$snooze min"
+            val theme = settings.themeMode.first()
+            binding.themeGroup.check(
+                when (theme) {
+                    ThemeController.LIGHT -> R.id.theme_light
+                    ThemeController.DARK -> R.id.theme_dark
+                    else -> R.id.theme_system
+                }
+            )
 
             binding.switch24h.setOnCheckedChangeListener { _, checked -> viewLifecycleOwner.lifecycleScope.launch { settings.setUse24h(checked) } }
             binding.switchSeconds.setOnCheckedChangeListener { _, checked -> viewLifecycleOwner.lifecycleScope.launch { settings.setShowSeconds(checked) } }
@@ -42,6 +51,18 @@ class SettingsFragment : Fragment() {
                 val v = value.toInt()
                 binding.textSnoozeValue.text = "$v min"
                 viewLifecycleOwner.lifecycleScope.launch { settings.setSnoozeMinutes(v) }
+            }
+            binding.themeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                if (!isChecked) return@addOnButtonCheckedListener
+                val mode = when (checkedId) {
+                    R.id.theme_light -> ThemeController.LIGHT
+                    R.id.theme_dark -> ThemeController.DARK
+                    else -> ThemeController.SYSTEM
+                }
+                viewLifecycleOwner.lifecycleScope.launch {
+                    settings.setThemeMode(mode)
+                    ThemeController.apply(mode)
+                }
             }
         }
     }

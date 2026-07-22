@@ -40,7 +40,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/divider" />
+        android:background="@color/widget_stroke" />
 
     <LinearLayout
         android:id="@+id/widget_row_2"
@@ -74,7 +74,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/divider" />
+        android:background="@color/widget_stroke" />
 
     <LinearLayout
         android:id="@+id/widget_row_3"

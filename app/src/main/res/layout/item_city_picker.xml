@@ -3,10 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_s"
+    android:background="@drawable/bg_card_interactive"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="64dp"
     android:orientation="horizontal"
-    android:padding="@dimen/space_l"
-    android:background="?attr/selectableItemBackground"
-    android:gravity="center_vertical">
+    android:paddingHorizontal="@dimen/space_l">
 
     <TextView
         android:id="@+id/label"
@@ -15,6 +19,5 @@
         android:layout_weight="1"
         android:textColor="@color/text_primary"
         android:textSize="@dimen/text_subtitle"
-        tools:text="New York — UTC-05:00" />
-
+        tools:text="🇺🇸 New York — United States" />
 </LinearLayout>

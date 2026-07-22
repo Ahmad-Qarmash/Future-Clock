@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -22,6 +21,7 @@ import com.futureclock.app.ui.settings.SettingsFragment
 import com.futureclock.app.ui.stopwatch.StopwatchFragment
 import com.futureclock.app.ui.timer.TimerFragment
 import com.futureclock.app.ui.world.WorldFragment
+import com.futureclock.app.ui.common.UiFeedback
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (!granted) Toast.makeText(this, R.string.perm_notifications_rationale, Toast.LENGTH_LONG).show()
+        if (!granted) UiFeedback.show(binding.root, R.string.perm_notifications_rationale)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity() {
 
         fm.beginTransaction()
             .setReorderingAllowed(true)
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
             .replace(R.id.fragment_container, fragment, tag)
             .commit()
     }
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity() {
     fun openSettings() {
         supportFragmentManager.beginTransaction()
             .setReorderingAllowed(true)
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
             .replace(R.id.fragment_container, SettingsFragment(), "tab_settings")
             .addToBackStack(null)
             .commit()
@@ -124,7 +126,7 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val am = getSystemService(ALARM_SERVICE) as AlarmManager
             if (!am.canScheduleExactAlarms()) {
-                Toast.makeText(this, R.string.perm_exact_alarm_rationale, Toast.LENGTH_LONG).show()
+                UiFeedback.show(binding.root, R.string.perm_exact_alarm_rationale)
             }
         }
     }
