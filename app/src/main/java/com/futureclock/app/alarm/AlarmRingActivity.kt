@@ -19,6 +19,7 @@ import com.futureclock.app.R
 import com.futureclock.app.ads.AdManager
 import com.futureclock.app.databinding.ActivityAlarmRingBinding
 import com.futureclock.app.util.TimeFormat
+import com.futureclock.app.util.AlarmMath
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -67,6 +68,8 @@ class AlarmRingActivity : AppCompatActivity() {
         alarmId = intent.getLongExtra(com.futureclock.app.notification.Extras.ALARM_ID, -1L)
         if (alarmId < 0) { finish(); return }
 
+        binding.btnSnooze.setOnClickListener { onSnooze(it) }
+        binding.btnDismiss.setOnClickListener { onDismiss(it) }
         loadAlarm()
     }
 
@@ -74,7 +77,7 @@ class AlarmRingActivity : AppCompatActivity() {
         val app = application as FutureClockApp
         lifecycleScope.launch {
             val alarm = app.database.alarmDao().getById(alarmId) ?: run { finish(); return@launch }
-            val zone = java.util.TimeZone.getDefault()
+            val zone = AlarmMath.timeZone(alarm.timeZoneId)
             binding.textAlarmTime.text = TimeFormat.formatTime(
                 zone = zone,
                 use24h = true,

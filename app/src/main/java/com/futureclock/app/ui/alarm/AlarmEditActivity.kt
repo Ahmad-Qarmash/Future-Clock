@@ -1,7 +1,7 @@
 package com.futureclock.app.ui.alarm
 
 import android.os.Bundle
-import android.widget.Toast
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -9,16 +9,26 @@ import com.futureclock.app.FutureClockApp
 import com.futureclock.app.R
 import com.futureclock.app.alarm.AlarmScheduler
 import com.futureclock.app.data.db.AlarmEntity
+import com.futureclock.app.data.tz.CityCatalog
 import com.futureclock.app.databinding.ActivityAlarmEditBinding
 import com.futureclock.app.util.AlarmMath
+import com.futureclock.app.ui.common.UiFeedback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.TimeZone
 
 class AlarmEditActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAlarmEditBinding
     private var existingId: Long = 0L
     private var existing: AlarmEntity? = null
+    private var selectedTimeZoneId: String = TimeZone.getDefault().id
+    private val timeZoneOptions by lazy {
+        CityCatalog.ALL
+            .distinctBy { it.tzId }
+            .map { TimeZoneOption("${it.name} · ${it.tzId}", it.tzId) }
+            .sortedBy { it.label }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +39,11 @@ class AlarmEditActivity : AppCompatActivity() {
         binding.timePicker.setIs24HourView(true)
         binding.timePicker.hour = 7
         binding.timePicker.minute = 0
+        setupTimeZonePicker()
 
         if (existingId > 0) {
             title = getString(R.string.alarm_edit_title)
+            binding.textScreenTitle.text = getString(R.string.alarm_edit_title)
             binding.btnDelete.visibility = android.view.View.VISIBLE
             lifecycleScope.launch {
                 val alarm = (application as FutureClockApp).database.alarmDao().getById(existingId)
@@ -44,6 +56,8 @@ class AlarmEditActivity : AppCompatActivity() {
                     binding.switchGradual.isChecked = it.gradualVolume
                     binding.snoozeSlider.value = it.snoozeMinutes.toFloat()
                     binding.snoozeValue.text = "${it.snoozeMinutes} min"
+                    selectedTimeZoneId = it.timeZoneId.ifBlank { TimeZone.getDefault().id }
+                    binding.timezonePicker.setText(timeZoneLabel(selectedTimeZoneId), false)
                     binding.chipMon.isChecked = AlarmMath.hasDay(it.daysOfWeek, 0)
                     binding.chipTue.isChecked = AlarmMath.hasDay(it.daysOfWeek, 1)
                     binding.chipWed.isChecked = AlarmMath.hasDay(it.daysOfWeek, 2)
@@ -55,6 +69,7 @@ class AlarmEditActivity : AppCompatActivity() {
             }
         } else {
             title = getString(R.string.alarm_new_title)
+            binding.textScreenTitle.text = getString(R.string.alarm_new_title)
         }
 
         binding.snoozeSlider.addOnChangeListener { _, value, _ ->
@@ -71,7 +86,25 @@ class AlarmEditActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupTimeZonePicker() {
+        binding.timezonePicker.setAdapter(
+            ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, timeZoneOptions.map { it.label })
+        )
+        binding.timezonePicker.setOnItemClickListener { _, _, position, _ ->
+            selectedTimeZoneId = timeZoneOptions[position].id
+            binding.timezonePicker.error = null
+        }
+        binding.timezonePicker.setText(timeZoneLabel(selectedTimeZoneId), false)
+    }
+
+    private fun timeZoneLabel(id: String): String =
+        timeZoneOptions.firstOrNull { it.id == id }?.label ?: id
+
     private fun saveAlarm() {
+        if (binding.timezonePicker.text.toString() != timeZoneLabel(selectedTimeZoneId)) {
+            binding.timezonePicker.error = getString(R.string.alarm_timezone_invalid)
+            return
+        }
         val days = daysBitmask()
         val hour = binding.timePicker.hour
         val minute = binding.timePicker.minute
@@ -83,13 +116,15 @@ class AlarmEditActivity : AppCompatActivity() {
         val alarm = (current?.copy(
             hour = hour, minute = minute, label = label,
             daysOfWeek = days, vibrate = vibrate, gradualVolume = gradual,
-            snoozeMinutes = snooze, enabled = true
+            snoozeMinutes = snooze, enabled = true, timeZoneId = selectedTimeZoneId
         ) ?: AlarmEntity(
             hour = hour, minute = minute, label = label,
             daysOfWeek = days, vibrate = vibrate, gradualVolume = gradual,
-            snoozeMinutes = snooze, enabled = true
+            snoozeMinutes = snooze, enabled = true, timeZoneId = selectedTimeZoneId
         )).copy(
-            nextTriggerMs = AlarmMath.nextTrigger(System.currentTimeMillis(), hour, minute, days)
+            nextTriggerMs = AlarmMath.nextTrigger(
+                System.currentTimeMillis(), hour, minute, days, selectedTimeZoneId
+            )
         )
 
         val app = application as FutureClockApp
@@ -99,8 +134,12 @@ class AlarmEditActivity : AppCompatActivity() {
             AlarmScheduler.schedule(this@AlarmEditActivity, alarm.copy(id = id))
             com.futureclock.app.widget.WidgetUpdateScheduler.refreshAll(this@AlarmEditActivity)
             runOnUiThread {
-                Toast.makeText(this@AlarmEditActivity, "Saved", Toast.LENGTH_SHORT).show()
-                finish()
+                UiFeedback.show(binding.root, R.string.alarm_saved, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                    .addCallback(object : com.google.android.material.snackbar.Snackbar.Callback() {
+                        override fun onDismissed(transientBottomBar: com.google.android.material.snackbar.Snackbar?, event: Int) {
+                            finish()
+                        }
+                    })
             }
         }
     }
@@ -127,4 +166,6 @@ class AlarmEditActivity : AppCompatActivity() {
             runOnUiThread { finish() }
         }
     }
+
+    private data class TimeZoneOption(val label: String, val id: String)
 }

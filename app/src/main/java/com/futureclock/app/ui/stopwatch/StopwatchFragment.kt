@@ -50,6 +50,7 @@ class StopwatchFragment : Fragment() {
                 binding.btnToggle.text = getString(if (state.running) R.string.action_pause else R.string.action_start)
                 lapAdapter.submit(state.laps)
                 binding.recyclerLaps.visibility = if (state.laps.isEmpty()) View.GONE else View.VISIBLE
+                binding.textEmptyLaps.visibility = if (state.laps.isEmpty()) View.VISIBLE else View.GONE
                 render(state)
             }
         }

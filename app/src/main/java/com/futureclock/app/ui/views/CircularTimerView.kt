@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import com.futureclock.app.util.CountdownFormat
 import androidx.core.graphics.ColorUtils
+import com.google.android.material.color.MaterialColors
 
 class CircularTimerView @JvmOverloads constructor(
     context: Context,
@@ -23,35 +24,31 @@ class CircularTimerView @JvmOverloads constructor(
         set(v) { field = v.coerceAtLeast(0L); invalidate() }
 
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A1A3A")
+        color = MaterialColors.getColor(this@CircularTimerView, com.google.android.material.R.attr.colorSurfaceVariant, Color.DKGRAY)
         style = Paint.Style.STROKE
-        strokeWidth = 16f
+        strokeWidth = 10f * resources.displayMetrics.density
         strokeCap = Paint.Cap.ROUND
     }
     private val progressPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#00E5FF")
+        color = MaterialColors.getColor(this@CircularTimerView, com.google.android.material.R.attr.colorPrimary, Color.BLUE)
         style = Paint.Style.STROKE
-        strokeWidth = 16f
+        strokeWidth = 10f * resources.displayMetrics.density
         strokeCap = Paint.Cap.ROUND
     }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = MaterialColors.getColor(this@CircularTimerView, com.google.android.material.R.attr.colorOnSurface, Color.WHITE)
         textAlign = Paint.Align.CENTER
-        typeface = Typeface.create("sans-serif-thin", Typeface.NORMAL)
-        textSize = 84f
+        typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
+        textSize = 42f * resources.displayMetrics.scaledDensity
     }
     private val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#B0B0D0")
+        color = MaterialColors.getColor(this@CircularTimerView, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.LTGRAY)
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create("sans-serif", Typeface.NORMAL)
-        textSize = 24f
+        textSize = 13f * resources.displayMetrics.scaledDensity
     }
 
     private val arcRect = RectF()
-
-    init {
-        setLayerType(LAYER_TYPE_SOFTWARE, null)
-    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -65,10 +62,10 @@ class CircularTimerView @JvmOverloads constructor(
 
         val ratio = if (totalMs <= 0) 0f else (1f - remainingMs.toFloat() / totalMs.toFloat()).coerceIn(0f, 1f)
         val sweep = 360f * ratio
-        // Color shifts from cyan to magenta as time runs out
+        // The progress shift is semantic: primary while active, secondary near completion.
         progressPaint.color = blendColors(
-            Color.parseColor("#00E5FF"),
-            Color.parseColor("#FF00E5"),
+            MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary, Color.BLUE),
+            MaterialColors.getColor(this, com.google.android.material.R.attr.colorSecondary, Color.RED),
             ratio
         )
         canvas.drawArc(arcRect, -90f, sweep, false, progressPaint)
@@ -80,7 +77,7 @@ class CircularTimerView @JvmOverloads constructor(
         canvas.drawText(text, cx, textY, labelPaint)
 
         val sub = if (remainingMs <= 0) "DONE" else "${(ratio * 100).toInt()}%"
-        canvas.drawText(sub, cx, textY + 50f, subPaint)
+        canvas.drawText(sub, cx, textY + 28f * resources.displayMetrics.density, subPaint)
     }
 
     private fun blendColors(c1: Int, c2: Int, t: Float): Int =

@@ -18,5 +18,7 @@ data class AlarmEntity(
     @ColumnInfo(name = "snooze_minutes") val snoozeMinutes: Int = 5,
     @ColumnInfo(name = "sound_uri") val soundUri: String = "",
     @ColumnInfo(name = "difficulty") val difficulty: Int = 0, // 0=off, 1=math easy, 2=math hard, 3=type
+    /** IANA timezone ID. Empty only for alarms migrated from v1, which retain device-time behavior. */
+    @ColumnInfo(name = "timezone_id") val timeZoneId: String = "",
     @ColumnInfo(name = "next_trigger_ms") val nextTriggerMs: Long = 0L
 )

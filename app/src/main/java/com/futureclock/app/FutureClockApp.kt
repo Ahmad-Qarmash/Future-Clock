@@ -9,11 +9,14 @@ import com.futureclock.app.data.db.AppDatabase
 import com.futureclock.app.data.prefs.SettingsRepository
 import com.futureclock.app.notification.NotificationChannels
 import com.futureclock.app.widget.WidgetUpdateScheduler
+import com.futureclock.app.ui.theme.ThemeController
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 class FutureClockApp : Application() {
 
@@ -36,6 +39,10 @@ class FutureClockApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+
+        // Resolve the persisted appearance before the first Activity is created.
+        val savedTheme = runBlocking(Dispatchers.IO) { settings.themeMode.first() }
+        ThemeController.apply(savedTheme)
 
         createNotificationChannels()
 

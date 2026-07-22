@@ -24,7 +24,8 @@ object AlarmScheduler {
             System.currentTimeMillis(),
             alarm.hour,
             alarm.minute,
-            alarm.daysOfWeek
+            alarm.daysOfWeek,
+            alarm.timeZoneId
         )
         if (triggerMs <= 0) return
 

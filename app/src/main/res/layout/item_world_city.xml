@@ -1,80 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.FutureClock.Card.Flat"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="@dimen/space_l"
-    android:layout_marginBottom="@dimen/space_s"
-    android:background="@drawable/bg_neon_outline"
-    android:gravity="center_vertical">
-
-    <TextView
-        android:id="@+id/city_flag"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="26sp"
-        tools:text="🇺🇸" />
+    android:layout_marginBottom="@dimen/space_m">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="@dimen/space_l"
-        android:orientation="vertical">
+        android:gravity="center_vertical"
+        android:minHeight="88dp"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_l"
+        android:paddingTop="@dimen/space_m"
+        android:paddingEnd="@dimen/space_s"
+        android:paddingBottom="@dimen/space_m">
 
         <TextView
-            android:id="@+id/city_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_subtitle"
-            android:textStyle="bold"
-            tools:text="New York" />
+            android:id="@+id/city_flag"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:textSize="26sp"
+            tools:text="🇺🇸" />
 
-        <TextView
-            android:id="@+id/city_country"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_m"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/city_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_subtitle"
+                android:textStyle="bold"
+                tools:text="New York" />
+
+            <TextView
+                android:id="@+id/city_country"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:textColor="@color/text_tertiary"
+                android:textSize="@dimen/text_caption"
+                tools:text="United States" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_tertiary"
-            android:textSize="@dimen/text_caption"
-            tools:text="United States" />
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/city_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_title"
+                tools:text="12:34" />
+
+            <TextView
+                android:id="@+id/city_day_diff"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:textColor="@color/brand_primary"
+                android:textSize="@dimen/text_caption"
+                android:textStyle="bold"
+                tools:text="Today" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_remove"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:layout_marginStart="@dimen/space_xs"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_delete"
+            android:padding="12dp"
+            android:src="@drawable/ic_close"
+            app:tint="@color/text_secondary" />
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="end">
-
-        <TextView
-            android:id="@+id/city_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-light"
-            android:textColor="@color/neon_cyan"
-            android:textSize="@dimen/text_headline"
-            tools:text="12:34" />
-
-        <TextView
-            android:id="@+id/city_day_diff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_tertiary"
-            android:textSize="@dimen/text_caption"
-            tools:text="Today" />
-    </LinearLayout>
-
-    <ImageView
-        android:id="@+id/btn_remove"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="@dimen/space_s"
-        android:src="@drawable/ic_close"
-        android:padding="8dp"
-        android:alpha="0.5"
-        app:tint="@color/text_secondary"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/action_delete" />
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

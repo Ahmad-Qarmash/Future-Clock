@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
+import com.google.android.material.color.MaterialColors
 import java.util.Calendar
 import java.util.TimeZone
 
@@ -16,18 +17,14 @@ class AnalogClockView @JvmOverloads constructor(
 
     var timeZone: TimeZone = TimeZone.getDefault()
     var showSeconds: Boolean = true
-    var faceColor: Int = 0xFF0F0F22.toInt()
-    var strokeColor: Int = 0xFF00E5FF.toInt()
-    var hourHandColor: Int = 0xFFFF00E5.toInt()
-    var minuteHandColor: Int = 0xFF00E5FF.toInt()
-    var secondHandColor: Int = 0xFFB6FF00.toInt()
-    var tickColor: Int = 0xFF9090C0.toInt()
+    var faceColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurface, 0xFF151D2B.toInt())
+    var strokeColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary, 0xFF8EAAFF.toInt())
+    var hourHandColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorSecondary, 0xFFFF8B7B.toInt())
+    var minuteHandColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary, 0xFF8EAAFF.toInt())
+    var secondHandColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorTertiary, 0xFF67D5C4.toInt())
+    var tickColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, 0xFFC3CBD8.toInt())
 
     private val now = Calendar.getInstance()
-
-    init {
-        setLayerType(LAYER_TYPE_SOFTWARE, null) // required for BlurMaskFilter
-    }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()

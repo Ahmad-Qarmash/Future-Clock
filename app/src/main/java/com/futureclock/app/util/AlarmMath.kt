@@ -1,6 +1,7 @@
 package com.futureclock.app.util
 
 import java.util.Calendar
+import java.util.TimeZone
 
 object AlarmMath {
 
@@ -36,7 +37,22 @@ object AlarmMath {
      * Otherwise it picks the earliest day matching the mask, strictly after [now].
      */
     fun nextTrigger(now: Long, hour: Int, minute: Int, daysOfWeek: Int): Long {
-        val cal = Calendar.getInstance().apply {
+        return nextTrigger(now, hour, minute, daysOfWeek, "")
+    }
+
+    /**
+     * Computes the next trigger using the alarm's IANA timezone. This keeps the wall-clock
+     * hour and repeat weekdays anchored to that location across travel and DST transitions.
+     * A blank ID is reserved for migrated alarms and follows the current device timezone.
+     */
+    fun nextTrigger(
+        now: Long,
+        hour: Int,
+        minute: Int,
+        daysOfWeek: Int,
+        timeZoneId: String
+    ): Long {
+        val cal = Calendar.getInstance(timeZone(timeZoneId)).apply {
             timeInMillis = now
             set(Calendar.MILLISECOND, 0)
             set(Calendar.SECOND, 0)
@@ -59,6 +75,15 @@ object AlarmMath {
         // Should never happen given our loop bounds
         cal.add(Calendar.DAY_OF_YEAR, 1)
         return cal.timeInMillis
+    }
+
+    fun timeZone(timeZoneId: String): TimeZone {
+        if (timeZoneId.isBlank()) return TimeZone.getDefault()
+        return if (TimeZone.getAvailableIDs().contains(timeZoneId)) {
+            TimeZone.getTimeZone(timeZoneId)
+        } else {
+            TimeZone.getDefault()
+        }
     }
 
     private fun bitForDow(dow: Int): Int = when (dow) {

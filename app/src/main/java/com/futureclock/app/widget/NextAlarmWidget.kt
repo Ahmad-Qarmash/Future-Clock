@@ -51,13 +51,18 @@ class NextAlarmWidget : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_subtitle, " ")
             return
         }
-        val zone = java.util.TimeZone.getDefault()
+        val zone = AlarmMath.timeZone(alarm.timeZoneId)
         val time = TimeFormat.formatTime(zone, use24h = true, hour = alarm.hour, minute = alarm.minute)
         views.setTextViewText(R.id.widget_time, time)
-        val nextMs = AlarmMath.nextTrigger(System.currentTimeMillis(), alarm.hour, alarm.minute, alarm.daysOfWeek)
+        val nextMs = AlarmMath.nextTrigger(
+            System.currentTimeMillis(), alarm.hour, alarm.minute,
+            alarm.daysOfWeek, alarm.timeZoneId
+        )
         val delta = nextMs - System.currentTimeMillis()
         val countdown = context.getString(R.string.widget_countdown, CountdownLongFormat.format(delta))
-        val sub = if (alarm.label.isBlank()) countdown else "${alarm.label} · $countdown"
+        val zoneLabel = alarm.timeZoneId.ifBlank { zone.id }
+        val sub = if (alarm.label.isBlank()) "$zoneLabel · $countdown"
+        else "${alarm.label} · $zoneLabel · $countdown"
         views.setTextViewText(R.id.widget_subtitle, sub)
     }
 

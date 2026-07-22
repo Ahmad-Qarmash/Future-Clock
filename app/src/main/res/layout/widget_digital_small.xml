@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-thin"
-            android:textColor="@color/neon_cyan"
+            android:textColor="@color/widget_accent"
             android:textSize="14sp"
             android:includeFontPadding="false"
             tools:text=":56" />

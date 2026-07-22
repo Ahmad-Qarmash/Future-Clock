@@ -3,15 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_s"
+    android:background="@drawable/bg_card_interactive"
+    android:gravity="center_vertical"
+    android:minHeight="56dp"
     android:orientation="horizontal"
-    android:padding="@dimen/space_m"
-    android:background="@drawable/bg_neon_outline"
-    android:layout_marginBottom="@dimen/space_xs"
-    android:gravity="center_vertical">
+    android:paddingHorizontal="@dimen/space_l">
 
     <TextView
         android:id="@+id/lap_index"
-        android:layout_width="40dp"
+        android:layout_width="48dp"
         android:layout_height="wrap_content"
         android:textColor="@color/text_tertiary"
         android:textSize="@dimen/text_body"
@@ -22,7 +23,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:fontFamily="sans-serif-light"
+        android:fontFamily="sans-serif-medium"
         android:textColor="@color/text_primary"
         android:textSize="@dimen/text_subtitle"
         tools:text="00:23.45" />
@@ -31,7 +32,8 @@
         android:id="@+id/lap_total"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/neon_cyan"
-        android:textSize="@dimen/text_caption"
+        android:textColor="@color/brand_primary"
+        android:textSize="@dimen/text_body"
+        android:textStyle="bold"
         tools:text="01:12.30" />
 </LinearLayout>

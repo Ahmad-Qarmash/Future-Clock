@@ -36,7 +36,8 @@ class AlarmFragment : Fragment() {
                     val updated = alarm.copy(enabled = enabled)
                     val next = if (enabled)
                         com.futureclock.app.util.AlarmMath.nextTrigger(
-                            System.currentTimeMillis(), alarm.hour, alarm.minute, alarm.daysOfWeek
+                            System.currentTimeMillis(), alarm.hour, alarm.minute,
+                            alarm.daysOfWeek, alarm.timeZoneId
                         )
                     else 0L
                     app.database.alarmDao().update(updated.copy(nextTriggerMs = next))

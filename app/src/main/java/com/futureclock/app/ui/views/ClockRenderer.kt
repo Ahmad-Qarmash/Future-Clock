@@ -1,7 +1,6 @@
 package com.futureclock.app.ui.views
 
 import android.graphics.Bitmap
-import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -25,12 +24,12 @@ object ClockRenderer {
         w: Int,
         h: Int,
         time: Calendar,
-        faceColor: Int = Color.parseColor("#0F0F22"),
-        strokeColor: Int = Color.parseColor("#00E5FF"),
-        hourHandColor: Int = Color.parseColor("#FF00E5"),
-        minuteHandColor: Int = Color.parseColor("#00E5FF"),
-        secondHandColor: Int = Color.parseColor("#B6FF00"),
-        tickColor: Int = Color.parseColor("#9090C0"),
+        faceColor: Int = Color.parseColor("#121A27"),
+        strokeColor: Int = Color.parseColor("#8EAAFF"),
+        hourHandColor: Int = Color.parseColor("#FF8B7B"),
+        minuteHandColor: Int = Color.parseColor("#8EAAFF"),
+        secondHandColor: Int = Color.parseColor("#67D5C4"),
+        tickColor: Int = Color.parseColor("#AAB5C5"),
         drawSeconds: Boolean = true
     ) {
         if (w <= 0 || h <= 0) return
@@ -138,16 +137,8 @@ object ClockRenderer {
             minutePaint
         )
 
-        // Second hand (with glow)
+        // Second hand; kept crisp for legibility and battery-friendly rendering.
         if (drawSeconds) {
-            val secondGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = secondHandColor
-                style = Paint.Style.STROKE
-                strokeWidth = r * 0.025f
-                strokeCap = Paint.Cap.ROUND
-                maskFilter = BlurMaskFilter(r * 0.05f, BlurMaskFilter.Blur.NORMAL)
-                alpha = 200
-            }
             val secondPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = secondHandColor
                 style = Paint.Style.STROKE
@@ -159,19 +150,13 @@ object ClockRenderer {
                 cx, cy,
                 cx + secondLen * cos(secondAngle).toFloat(),
                 cy + secondLen * sin(secondAngle).toFloat(),
-                secondGlowPaint
-            )
-            canvas.drawLine(
-                cx, cy,
-                cx + secondLen * cos(secondAngle).toFloat(),
-                cy + secondLen * sin(secondAngle).toFloat(),
                 secondPaint
             )
         }
 
         // Center cap
         val centerOuter = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = bgSurface()
+            color = faceColor
             style = Paint.Style.FILL
         }
         canvas.drawCircle(cx, cy, r * 0.06f, centerOuter)
@@ -182,14 +167,12 @@ object ClockRenderer {
         canvas.drawCircle(cx, cy, r * 0.035f, centerInner)
     }
 
-    private fun bgSurface() = Color.parseColor("#0A0A1A")
-
     fun renderBitmap(
         widthPx: Int,
         heightPx: Int,
         time: Calendar,
-        faceColor: Int = Color.parseColor("#0F0F22"),
-        strokeColor: Int = Color.parseColor("#00E5FF")
+        faceColor: Int = Color.parseColor("#121A27"),
+        strokeColor: Int = Color.parseColor("#8EAAFF")
     ): Bitmap {
         val bmp = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)

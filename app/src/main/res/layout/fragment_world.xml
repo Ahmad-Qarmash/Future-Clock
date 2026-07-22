@@ -7,73 +7,84 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="@dimen/space_xl">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/space_l"
-            android:layout_marginTop="@dimen/space_l"
+            android:layout_marginHorizontal="@dimen/page_padding"
             android:text="@string/tab_world"
-            android:textColor="@color/neon_cyan"
-            android:textSize="@dimen/text_headline"
-            android:letterSpacing="0.08"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.FutureClock.ScreenTitle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/page_padding"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/world_subtitle"
+            android:textAppearance="@style/TextAppearance.FutureClock.Body" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="@dimen/space_l"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:paddingHorizontal="@dimen/space_l"
-            android:paddingTop="@dimen/space_m"
-            android:paddingBottom="96dp" />
+            android:paddingHorizontal="@dimen/page_padding"
+            android:paddingBottom="104dp" />
     </LinearLayout>
 
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/empty_state"
+        style="@style/Widget.FutureClock.Card.Flat"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/page_padding"
         android:visibility="gone">
 
-        <ImageView
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:src="@drawable/ic_world"
-            android:alpha="0.5"
-            app:tint="@color/neon_cyan"
-            android:contentDescription="@null" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_l"
-            android:text="@string/world_empty_title"
-            android:textColor="@color/text_primary"
-            android:textSize="@dimen/text_title"
-            android:textStyle="bold" />
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/space_xxl">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_s"
-            android:text="@string/world_empty_subtitle"
-            android:textColor="@color/text_tertiary"
-            android:textSize="@dimen/text_body" />
-    </LinearLayout>
+            <ImageView
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/bg_empty_icon"
+                android:contentDescription="@null"
+                android:padding="20dp"
+                android:src="@drawable/ic_world"
+                app:tint="@color/brand_primary" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_l"
+                android:text="@string/world_empty_title"
+                android:textAppearance="@style/TextAppearance.FutureClock.Section" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:gravity="center"
+                android:text="@string/world_empty_subtitle"
+                android:textAppearance="@style/TextAppearance.FutureClock.Body" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/space_l"
-        android:src="@drawable/ic_add"
-        android:contentDescription="@string/cd_add"
-        app:backgroundTint="@color/neon_cyan"
-        app:tint="@color/bg_base" />
-
+        android:layout_margin="@dimen/page_padding"
+        android:contentDescription="@string/action_add_city"
+        android:text="@string/action_add_city"
+        app:icon="@drawable/ic_add" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -39,24 +39,31 @@ class AlarmAdapter(
         holder.binding.alarmLabel.visibility = if (alarm.label.isBlank()) View.GONE else View.VISIBLE
 
         val days = AlarmMath.formatDays(alarm.daysOfWeek)
-        val nextMs = AlarmMath.nextTrigger(System.currentTimeMillis(), alarm.hour, alarm.minute, alarm.daysOfWeek)
-        val cal = Calendar.getInstance().apply { timeInMillis = nextMs }
-        val tomorrow = isTomorrow(cal)
+        val zone = AlarmMath.timeZone(alarm.timeZoneId)
+        val nextMs = AlarmMath.nextTrigger(
+            System.currentTimeMillis(), alarm.hour, alarm.minute, alarm.daysOfWeek, alarm.timeZoneId
+        )
+        val cal = Calendar.getInstance(zone).apply { timeInMillis = nextMs }
+        val tomorrow = isTomorrow(cal, zone)
         val ctx = holder.itemView.context
         val whenText = buildString {
             append(if (tomorrow) ctx.getString(R.string.alarm_tomorrow)
                    else ctx.getString(R.string.alarm_today_at, TimeFormat.formatTime(use24h, alarm.hour, alarm.minute)))
             if (days.isNotEmpty()) append(" · ").append(days)
+            append(" · ").append(alarm.timeZoneId.ifBlank { zone.id })
         }
         holder.binding.alarmWhen.text = whenText
         holder.binding.alarmSwitch.setOnCheckedChangeListener(null)
         holder.binding.alarmSwitch.isChecked = alarm.enabled
+        holder.binding.alarmSwitch.contentDescription = ctx.getString(
+            if (alarm.enabled) R.string.alarm_toggle_on else R.string.alarm_toggle_off
+        )
         holder.binding.alarmSwitch.setOnCheckedChangeListener { _, checked -> onToggle(alarm, checked) }
         holder.binding.root.setOnClickListener { onClick(alarm) }
     }
 
-    private fun isTomorrow(cal: Calendar): Boolean {
-        val now = Calendar.getInstance()
+    private fun isTomorrow(cal: Calendar, zone: java.util.TimeZone): Boolean {
+        val now = Calendar.getInstance(zone)
         return now.get(Calendar.DAY_OF_YEAR) != cal.get(Calendar.DAY_OF_YEAR) &&
                 now.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
     }
