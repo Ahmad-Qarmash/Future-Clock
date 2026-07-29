@@ -121,6 +121,35 @@ A minimal GitHub Actions workflow is in `.github/workflows/android.yml`. It
 runs on every push and PR, builds the debug APK, and uploads it as an
 artifact named `app-debug`.
 
+## Offline place catalog
+
+The packaged catalog is a separate, disposable SQLite database; it never shares
+storage with Room user data. `CityCatalog` expands
+`app/src/main/assets/places-v2.sqlite.dbz` into `noBackupFilesDir`, validates a
+new copy, and atomically replaces only the catalog when its version changes.
+
+Regenerate it from the official GeoNames exports:
+
+```bash
+python tools/build_place_catalog.py \
+  --cities /path/to/cities500.zip \
+  --countries /path/to/countryInfo.txt \
+  --admin1 /path/to/admin1CodesASCII.txt \
+  --output app/src/main/assets/places-v2.sqlite.dbz
+```
+
+Verify the exact packaged asset before release:
+
+```bash
+python tools/verify_place_catalog.py \
+  app/src/main/assets/places-v2.sqlite.dbz \
+  --java "$JAVA_HOME/bin/java"
+```
+
+The verifier checks SQLite integrity, schema/version metadata, indexes, required
+fields, coordinates, duplicate identifiers, representative searches, global
+coverage, and every timezone ID against Java.
+
 ## Troubleshooting
 
 | Problem                                    | Fix                                                                                          |

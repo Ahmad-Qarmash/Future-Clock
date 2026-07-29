@@ -75,8 +75,7 @@ object AdManager {
         val intervalOk = sinceLast > MIN_INTERSTITIAL_INTERVAL_MS
         val cadenceOk = when (trigger) {
             Trigger.TAB_CHANGE -> tabChangeCounter % NTH_TAB_CHANGE == 0
-            Trigger.ALARM_DISMISS,
-            Trigger.ADD_CITY -> true
+            Trigger.ALARM_DISMISS -> true
         }
         if (!intervalOk || !cadenceOk) return false
         val ad = interstitial ?: return false
@@ -101,5 +100,5 @@ object AdManager {
         return shown
     }
 
-    enum class Trigger { TAB_CHANGE, ALARM_DISMISS, ADD_CITY }
+    enum class Trigger { TAB_CHANGE, ALARM_DISMISS }
 }

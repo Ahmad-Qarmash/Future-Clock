@@ -17,32 +17,39 @@ import com.futureclock.app.util.TimeFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class NextAlarmWidget : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
-        ids.forEach { id -> updateOne(context, mgr, id) }
-    }
-
-    override fun onEnabled(context: Context) { WidgetUpdateScheduler.scheduleNext(context) }
-
-    private fun updateOne(context: Context, mgr: AppWidgetManager, id: Int) {
-        val views = RemoteViews(context.packageName, R.layout.widget_next_alarm)
         val app = context.applicationContext as FutureClockApp
-
-        views.setOnClickPendingIntent(R.id.widget_root, openAlarm(context))
-
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val next = app.database.alarmDao().getNextEnabled()
-                renderAlarm(views, next, context)
-                mgr.updateAppWidget(id, views)
+                val alarmResult = runCatching { app.database.alarmDao().getNextEnabled() }
+                ids.forEach { id ->
+                    val views = RemoteViews(context.packageName, R.layout.widget_next_alarm)
+                    views.setOnClickPendingIntent(R.id.widget_root, openAlarm(context))
+                    alarmResult.onSuccess { renderAlarm(views, it, context) }
+                        .onFailure {
+                            views.setTextViewText(
+                                R.id.widget_time,
+                                context.getString(R.string.widget_temporarily_unavailable)
+                            )
+                            views.setTextViewText(R.id.widget_subtitle, " ")
+                        }
+                    mgr.updateAppWidget(id, views)
+                }
+                if (alarmResult.isFailure) {
+                    WidgetUpdateScheduler.scheduleNext(context)
+                }
             } finally {
                 pendingResult.finish()
             }
         }
+    }
+
+    override fun onEnabled(context: Context) {
+        WidgetUpdateScheduler.scheduleNext(context)
     }
 
     private fun renderAlarm(views: RemoteViews, alarm: AlarmEntity?, context: Context) {

@@ -8,10 +8,13 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
-import com.futureclock.app.data.tz.CityCatalog
+import com.futureclock.app.data.tz.City
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.util.TimeFormat
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.TimeZone
+import kotlin.math.absoluteValue
 
 class WorldClockWidget : AppWidgetProvider() {
 
@@ -19,7 +22,12 @@ class WorldClockWidget : AppWidgetProvider() {
         ids.forEach { id -> updateOne(context, mgr, id) }
     }
 
-    override fun onAppWidgetOptionsChanged(context: Context, mgr: AppWidgetManager, id: Int, newOptions: android.os.Bundle) {
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        mgr: AppWidgetManager,
+        id: Int,
+        newOptions: android.os.Bundle
+    ) {
         updateOne(context, mgr, id)
     }
 
@@ -40,6 +48,7 @@ class WorldClockWidget : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, layout)
 
         val selected = loadCities(context, id).take(countCities)
+        val validTimeZones = TimeZone.getAvailableIDs().toHashSet()
         for (i in 0 until countCities) {
             val (cityView, timeView) = when (i) {
                 0 -> R.id.widget_city_1 to R.id.widget_time_1
@@ -48,9 +57,17 @@ class WorldClockWidget : AppWidgetProvider() {
             }
             if (i < selected.size) {
                 val city = selected[i]
-                val zone = TimeZone.getTimeZone(city.tzId)
+                val time = if (city.tzId in validTimeZones) {
+                    TimeFormat.formatTime(
+                        TimeZone.getTimeZone(city.tzId),
+                        use24h = true,
+                        showSeconds = false
+                    )
+                } else {
+                    context.getString(R.string.widget_time_unavailable)
+                }
                 views.setTextViewText(cityView, "${city.flag} ${city.name}")
-                views.setTextViewText(timeView, TimeFormat.formatTime(zone, use24h = true, showSeconds = false))
+                views.setTextViewText(timeView, time)
             } else {
                 views.setTextViewText(cityView, "")
                 views.setTextViewText(timeView, "-")
@@ -61,27 +78,15 @@ class WorldClockWidget : AppWidgetProvider() {
         mgr.updateAppWidget(id, views)
     }
 
-    private fun loadCities(context: Context, id: Int): List<com.futureclock.app.data.tz.City> {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val raw = prefs.getString("widget_$id", null) ?: return defaultCities()
-        return raw.split(SEPARATOR)
-            .filter { it.isNotBlank() }
-            .mapNotNull { tzId -> CityCatalog.ALL.find { it.tzId == tzId } }
-            .ifEmpty { defaultCities() }
-    }
-
-    private fun defaultCities(): List<com.futureclock.app.data.tz.City> {
-        val defaults = listOf("America/New_York", "Europe/London", "Asia/Tokyo")
-        return defaults.mapNotNull { tzId -> CityCatalog.ALL.find { it.tzId == tzId } }
-    }
-
     private fun openApp(context: Context): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
             action = Actions.ACTION_OPEN_WORLD_TAB
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         return PendingIntent.getActivity(
-            context, 0, intent,
+            context,
+            0,
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
@@ -90,11 +95,80 @@ class WorldClockWidget : AppWidgetProvider() {
         const val PREFS = "world_widget_prefs"
         private const val SEPARATOR = "|"
 
-        fun saveCities(context: Context, id: Int, tzIds: List<String>) {
+        fun saveCities(context: Context, id: Int, cities: List<City>) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .edit()
-                .putString("widget_$id", tzIds.joinToString(SEPARATOR))
+                .putString("widget_$id", encodeCities(cities))
                 .apply()
         }
+
+        internal fun encodeCities(cities: List<City>): String {
+            val array = JSONArray()
+            cities.take(3).forEach { city ->
+                array.put(
+                    JSONObject()
+                        .put("id", city.id)
+                        .put("name", city.name)
+                        .put("country", city.country)
+                        .put("countryCode", city.countryCode)
+                        .put("flag", city.flag)
+                        .put("admin1", city.admin1)
+                        .put("tzId", city.tzId)
+                        .put("population", city.population)
+                )
+            }
+            return array.toString()
+        }
+
+        fun loadCities(context: Context, id: Int): List<City> {
+            val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getString("widget_$id", null)
+                ?: return defaultCities()
+            if (!raw.trimStart().startsWith("[")) {
+                return raw.split(SEPARATOR)
+                    .filter { it.isNotBlank() }
+                    .map(::legacyCity)
+                    .ifEmpty(::defaultCities)
+            }
+            return decodeCities(raw).getOrDefault(defaultCities()).ifEmpty(::defaultCities)
+        }
+
+        internal fun decodeCities(raw: String): Result<List<City>> = runCatching {
+            val array = JSONArray(raw)
+            buildList {
+                for (index in 0 until array.length()) {
+                    val item = array.getJSONObject(index)
+                    add(
+                        City(
+                            id = item.getLong("id"),
+                            name = item.getString("name"),
+                            country = item.optString("country"),
+                            countryCode = item.optString("countryCode"),
+                            flag = item.optString("flag", "🌐"),
+                            admin1 = item.optString("admin1"),
+                            tzId = item.getString("tzId"),
+                            population = item.optLong("population")
+                        )
+                    )
+                }
+            }
+        }
+
+        private fun legacyCity(tzId: String): City = City(
+            id = -(tzId.hashCode().toLong().absoluteValue + 10_000L),
+            name = tzId.substringAfterLast('/').replace('_', ' '),
+            country = tzId.substringBefore('/').replace('_', ' '),
+            countryCode = "",
+            flag = "🌐",
+            admin1 = "",
+            tzId = tzId,
+            population = 0
+        )
+
+        private fun defaultCities(): List<City> = listOf(
+            City(-1, "New York", "United States", "US", "🇺🇸", "New York", "America/New_York", 0),
+            City(-2, "London", "United Kingdom", "GB", "🇬🇧", "England", "Europe/London", 0),
+            City(-3, "Tokyo", "Japan", "JP", "🇯🇵", "Tokyo", "Asia/Tokyo", 0)
+        )
     }
 }

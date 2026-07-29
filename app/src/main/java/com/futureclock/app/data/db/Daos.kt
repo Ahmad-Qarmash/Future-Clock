@@ -46,8 +46,8 @@ interface WorldCityDao {
     @Query("SELECT * FROM world_cities ORDER BY sort_order, display_name")
     suspend fun getAll(): List<WorldCityEntity>
 
-    @Query("SELECT * FROM world_cities WHERE tzId = :tz LIMIT 1")
-    suspend fun getByTz(tz: String): WorldCityEntity?
+    @Query("SELECT * FROM world_cities WHERE location_id = :locationId LIMIT 1")
+    suspend fun getByLocationId(locationId: Long): WorldCityEntity?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(city: WorldCityEntity)
@@ -58,8 +58,8 @@ interface WorldCityDao {
     @Delete
     suspend fun delete(city: WorldCityEntity)
 
-    @Query("DELETE FROM world_cities WHERE tzId = :tz")
-    suspend fun deleteByTz(tz: String)
+    @Query("DELETE FROM world_cities WHERE location_id = :locationId")
+    suspend fun deleteByLocationId(locationId: Long)
 
     @Query("SELECT COUNT(*) FROM world_cities")
     suspend fun count(): Int

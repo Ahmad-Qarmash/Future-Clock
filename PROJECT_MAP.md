@@ -7,7 +7,7 @@ App launch
   ↓
 FutureClockApp (Application)
   ├── creates Notification channels
-  ├── initializes AdMob (banner + interstitial preload)
+  ├── warms the offline place catalog on a background dispatcher
   └── schedules the next widget tick
   ↓
 MainActivity
@@ -18,6 +18,7 @@ MainActivity
 Fragments (Clock, World, Alarm, Timer, Stopwatch, Settings)
   ↓ observe Flow
 Room DAO (alarms, world cities)   +   DataStore (settings)
+Versioned SQLite place catalog (read-only, separate from user data)
 
 Background paths
   AlarmManager.setAlarmClock ──► AlarmReceiver ──► AlarmRingActivity
@@ -43,7 +44,7 @@ Foreground services
 | `ui/views`                                      | Custom `AnalogClockView` and `CircularTimerView` (Canvas-drawn)      |
 | `data/db`                                       | Room entities (`AlarmEntity`, `WorldCityEntity`), DAOs, database     |
 | `data/prefs`                                    | DataStore-backed `SettingsRepository`                                |
-| `data/tz`                                       | Curated `CityCatalog` of 150+ IANA timezone cities with country flags|
+| `data/tz`                                       | Indexed offline `CityCatalog` with 235,000+ GeoNames places          |
 | `alarm`                                         | `AlarmScheduler`, `AlarmReceiver`, `AlarmRingActivity`, snooze      |
 | `service`                                       | `TimerService` and `StopwatchService` foreground services            |
 | `receiver`                                      | `BootReceiver`, `WidgetTickReceiver`                                 |
@@ -60,8 +61,8 @@ Foreground services
 
 | Table           | Purpose                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------- |
-| `alarms`        | hour, minute, label, days-of-week bitmask, enabled, vibrate, gradual, snooze, difficulty|
-| `world_cities`  | tzId (IANA), display name, country, flag, sort order                                     |
+| `alarms`        | hour, minute, label, repeat mask, IANA timezone, enabled, feedback, next trigger          |
+| `world_cities`  | stable catalog location ID, IANA timezone, display name, country, flag, sort order        |
 
 Alarms are sorted by `next_trigger_ms` (computed by `AlarmMath.nextTrigger`) so the
 `NextAlarmWidget` always shows the soonest enabled alarm and the schedule path can avoid
@@ -97,17 +98,17 @@ duplicating work.
 1. User long-presses the home screen, picks the World widget, then the system
    launches `WorldClockConfigActivity`.
 2. The activity lets the user search and toggle 1–3 cities.
-3. On confirm, the chosen IANA timezones are saved to a `SharedPreferences` keyed by
-   widget instance id, and the widget is updated immediately.
+3. On confirm, complete place records are saved to `SharedPreferences` keyed by widget
+   instance ID, so rendering survives process death or catalog replacement.
+4. Launchers that support reconfiguration can reopen the same activity for an existing widget.
 
 ## Ads
 
 `AdManager` is a singleton that:
 
-- Preloads a single `InterstitialAd` on app start.
+- Loads banner and interstitial inventory through the shared manager.
 - Exposes `createBanner` for the always-visible banner above the bottom nav.
-- Renders the interstitial at well-defined moments (alarm dismiss, add city,
-  every 5th tab change) and rate-limits it to 1 per minute so it never feels
+- Renders the interstitial at well-defined moments and rate-limits it so it never feels
   intrusive.
 
 See [ADS.md](./ADS.md) for swapping in your own AdMob unit IDs.

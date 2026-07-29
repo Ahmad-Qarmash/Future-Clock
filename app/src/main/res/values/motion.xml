@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="motion_fast">120</integer>
+    <integer name="motion_standard">220</integer>
+    <integer name="motion_emphasized">320</integer>
+</resources>

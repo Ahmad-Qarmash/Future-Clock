@@ -1,7 +1,7 @@
 package com.futureclock.app.ui.alarm
 
 import android.os.Bundle
-import android.widget.ArrayAdapter
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -9,12 +9,13 @@ import com.futureclock.app.FutureClockApp
 import com.futureclock.app.R
 import com.futureclock.app.alarm.AlarmScheduler
 import com.futureclock.app.data.db.AlarmEntity
-import com.futureclock.app.data.tz.CityCatalog
 import com.futureclock.app.databinding.ActivityAlarmEditBinding
 import com.futureclock.app.util.AlarmMath
 import com.futureclock.app.ui.common.UiFeedback
+import com.futureclock.app.ui.world.WorldPickerActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.TimeZone
 
 class AlarmEditActivity : AppCompatActivity() {
@@ -23,11 +24,31 @@ class AlarmEditActivity : AppCompatActivity() {
     private var existingId: Long = 0L
     private var existing: AlarmEntity? = null
     private var selectedTimeZoneId: String = TimeZone.getDefault().id
-    private val timeZoneOptions by lazy {
-        CityCatalog.ALL
-            .distinctBy { it.tzId }
-            .map { TimeZoneOption("${it.name} · ${it.tzId}", it.tzId) }
-            .sortedBy { it.label }
+    private var selectedPlaceLabel: String = selectedTimeZoneId
+    private var isPlacePickerOpen = false
+    private val validTimeZoneIds by lazy { TimeZone.getAvailableIDs().toHashSet() }
+    private val placePicker = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        isPlacePickerOpen = false
+        binding.timezonePicker.clearFocus()
+        if (result.resultCode != RESULT_OK) return@registerForActivityResult
+        val data = result.data ?: return@registerForActivityResult
+        val timeZoneId = data.getStringExtra(WorldPickerActivity.EXTRA_TIMEZONE_ID)
+            ?: return@registerForActivityResult
+        if (timeZoneId !in validTimeZoneIds) {
+            binding.timezonePicker.error = getString(R.string.alarm_timezone_invalid)
+            return@registerForActivityResult
+        }
+        val city = data.getStringExtra(WorldPickerActivity.EXTRA_PLACE_NAME).orEmpty()
+        val country = data.getStringExtra(WorldPickerActivity.EXTRA_COUNTRY_NAME).orEmpty()
+        val flag = data.getStringExtra(WorldPickerActivity.EXTRA_FLAG).orEmpty()
+        selectedTimeZoneId = timeZoneId
+        selectedPlaceLabel = listOf("$flag $city".trim(), country, timeZoneId)
+            .filter { it.isNotBlank() }
+            .joinToString(" · ")
+        binding.timezonePicker.setText(selectedPlaceLabel)
+        binding.timezonePicker.error = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,10 +57,14 @@ class AlarmEditActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         existingId = intent.getLongExtra("alarm_id", 0L)
+        selectedTimeZoneId = savedInstanceState?.getString(STATE_TIME_ZONE_ID)
+            ?: TimeZone.getDefault().id
+        selectedPlaceLabel = savedInstanceState?.getString(STATE_PLACE_LABEL)
+            ?: selectedTimeZoneId
         binding.timePicker.setIs24HourView(true)
-        binding.timePicker.hour = 7
-        binding.timePicker.minute = 0
-        setupTimeZonePicker()
+        binding.timePicker.hour = savedInstanceState?.getInt(STATE_HOUR) ?: 7
+        binding.timePicker.minute = savedInstanceState?.getInt(STATE_MINUTE) ?: 0
+        setupPlacePicker()
 
         if (existingId > 0) {
             title = getString(R.string.alarm_edit_title)
@@ -49,22 +74,36 @@ class AlarmEditActivity : AppCompatActivity() {
                 val alarm = (application as FutureClockApp).database.alarmDao().getById(existingId)
                 alarm?.let {
                     existing = it
-                    binding.timePicker.hour = it.hour
-                    binding.timePicker.minute = it.minute
-                    binding.editLabel.setText(it.label)
-                    binding.switchVibrate.isChecked = it.vibrate
-                    binding.switchGradual.isChecked = it.gradualVolume
-                    binding.snoozeSlider.value = it.snoozeMinutes.toFloat()
-                    binding.snoozeValue.text = "${it.snoozeMinutes} min"
-                    selectedTimeZoneId = it.timeZoneId.ifBlank { TimeZone.getDefault().id }
-                    binding.timezonePicker.setText(timeZoneLabel(selectedTimeZoneId), false)
-                    binding.chipMon.isChecked = AlarmMath.hasDay(it.daysOfWeek, 0)
-                    binding.chipTue.isChecked = AlarmMath.hasDay(it.daysOfWeek, 1)
-                    binding.chipWed.isChecked = AlarmMath.hasDay(it.daysOfWeek, 2)
-                    binding.chipThu.isChecked = AlarmMath.hasDay(it.daysOfWeek, 3)
-                    binding.chipFri.isChecked = AlarmMath.hasDay(it.daysOfWeek, 4)
-                    binding.chipSat.isChecked = AlarmMath.hasDay(it.daysOfWeek, 5)
-                    binding.chipSun.isChecked = AlarmMath.hasDay(it.daysOfWeek, 6)
+                    if (savedInstanceState == null) {
+                        binding.timePicker.hour = it.hour
+                        binding.timePicker.minute = it.minute
+                        binding.editLabel.setText(it.label)
+                        binding.switchVibrate.isChecked = it.vibrate
+                        binding.switchGradual.isChecked = it.gradualVolume
+                        binding.snoozeSlider.value = it.snoozeMinutes.toFloat()
+                        binding.snoozeValue.text = resources.getQuantityString(
+                            R.plurals.duration_minutes,
+                            it.snoozeMinutes,
+                            it.snoozeMinutes
+                        )
+                        selectedTimeZoneId = it.timeZoneId
+                            .takeIf(validTimeZoneIds::contains)
+                            ?: TimeZone.getDefault().id
+                        selectedPlaceLabel = withContext(Dispatchers.IO) {
+                            com.futureclock.app.data.tz.CityCatalog.get(this@AlarmEditActivity)
+                                .findByTimeZone(selectedTimeZoneId)
+                        }?.let { place ->
+                            "${place.flag} ${place.name} · ${place.country} · ${place.tzId}"
+                        } ?: selectedTimeZoneId
+                        binding.timezonePicker.setText(selectedPlaceLabel)
+                        binding.chipMon.isChecked = AlarmMath.hasDay(it.daysOfWeek, 0)
+                        binding.chipTue.isChecked = AlarmMath.hasDay(it.daysOfWeek, 1)
+                        binding.chipWed.isChecked = AlarmMath.hasDay(it.daysOfWeek, 2)
+                        binding.chipThu.isChecked = AlarmMath.hasDay(it.daysOfWeek, 3)
+                        binding.chipFri.isChecked = AlarmMath.hasDay(it.daysOfWeek, 4)
+                        binding.chipSat.isChecked = AlarmMath.hasDay(it.daysOfWeek, 5)
+                        binding.chipSun.isChecked = AlarmMath.hasDay(it.daysOfWeek, 6)
+                    }
                 }
             }
         } else {
@@ -73,7 +112,12 @@ class AlarmEditActivity : AppCompatActivity() {
         }
 
         binding.snoozeSlider.addOnChangeListener { _, value, _ ->
-            binding.snoozeValue.text = "${value.toInt()} min"
+            val minutes = value.toInt()
+            binding.snoozeValue.text = resources.getQuantityString(
+                R.plurals.duration_minutes,
+                minutes,
+                minutes
+            )
         }
 
         binding.btnSave.setOnClickListener { saveAlarm() }
@@ -86,22 +130,33 @@ class AlarmEditActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupTimeZonePicker() {
-        binding.timezonePicker.setAdapter(
-            ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, timeZoneOptions.map { it.label })
-        )
-        binding.timezonePicker.setOnItemClickListener { _, _, position, _ ->
-            selectedTimeZoneId = timeZoneOptions[position].id
-            binding.timezonePicker.error = null
-        }
-        binding.timezonePicker.setText(timeZoneLabel(selectedTimeZoneId), false)
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(STATE_TIME_ZONE_ID, selectedTimeZoneId)
+        outState.putString(STATE_PLACE_LABEL, selectedPlaceLabel)
+        outState.putInt(STATE_HOUR, binding.timePicker.hour)
+        outState.putInt(STATE_MINUTE, binding.timePicker.minute)
+        super.onSaveInstanceState(outState)
     }
 
-    private fun timeZoneLabel(id: String): String =
-        timeZoneOptions.firstOrNull { it.id == id }?.label ?: id
+    private fun setupPlacePicker() {
+        binding.timezonePicker.setText(selectedPlaceLabel)
+        binding.timezonePicker.setOnClickListener { launchPlacePicker() }
+        binding.timezonePicker.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) launchPlacePicker()
+        }
+    }
+
+    private fun launchPlacePicker() {
+        if (isPlacePickerOpen) return
+        isPlacePickerOpen = true
+        placePicker.launch(
+            android.content.Intent(this, WorldPickerActivity::class.java)
+                .putExtra(WorldPickerActivity.EXTRA_MODE, WorldPickerActivity.MODE_ALARM)
+        )
+    }
 
     private fun saveAlarm() {
-        if (binding.timezonePicker.text.toString() != timeZoneLabel(selectedTimeZoneId)) {
+        if (selectedTimeZoneId !in validTimeZoneIds) {
             binding.timezonePicker.error = getString(R.string.alarm_timezone_invalid)
             return
         }
@@ -166,6 +221,10 @@ class AlarmEditActivity : AppCompatActivity() {
             runOnUiThread { finish() }
         }
     }
-
-    private data class TimeZoneOption(val label: String, val id: String)
+    companion object {
+        private const val STATE_TIME_ZONE_ID = "selected_time_zone_id"
+        private const val STATE_PLACE_LABEL = "selected_place_label"
+        private const val STATE_HOUR = "alarm_hour"
+        private const val STATE_MINUTE = "alarm_minute"
+    }
 }

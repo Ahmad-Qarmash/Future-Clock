@@ -11,11 +11,9 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.futureclock.app.FutureClockApp
-import com.futureclock.app.ads.AdManager
 import com.futureclock.app.databinding.FragmentWorldBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class WorldFragment : Fragment() {
@@ -36,7 +34,7 @@ class WorldFragment : Fragment() {
             onRemove = { city ->
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     val dao = (requireContext().applicationContext as FutureClockApp).database.worldCityDao()
-                    dao.deleteByTz(city.tzId)
+                    dao.deleteByLocationId(city.locationId)
                     com.futureclock.app.widget.WidgetUpdateScheduler.refreshAll(requireContext())
                 }
             }
@@ -79,14 +77,6 @@ class WorldFragment : Fragment() {
             snapshot.forEachIndexed { index, city ->
                 dao.update(city.copy(sortOrder = index + 1))
             }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewLifecycleOwner.lifecycleScope.launch {
-            delay(300)
-            activity?.let { AdManager.maybeShowInterstitial(it, AdManager.Trigger.ADD_CITY) }
         }
     }
 

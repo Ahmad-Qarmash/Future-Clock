@@ -48,7 +48,25 @@
     <string name="world_empty_title">No cities yet</string>
     <string name="world_empty_subtitle">Tap + to add a city</string>
     <string name="world_add_title">Add a city</string>
-    <string name="world_search_hint">Search city or country</string>
+    <string name="world_search_hint">Search any city, town, village, region, or country</string>
+    <string name="world_catalog_summary">235,000+ places worldwide · Offline data by GeoNames</string>
+    <string name="world_no_results">No matching places found</string>
+    <string name="world_add_error">Couldn’t add this place. Please try again.</string>
+    <string name="place_choose_country">Choose a country</string>
+    <string name="place_country_subtitle">Browse countries first, or search for a place directly</string>
+    <string name="place_country_search_hint">Search countries or places</string>
+    <string name="place_choose_city">Choose a place in %1$s</string>
+    <string name="place_city_subtitle">Cities, towns, villages, and administrative seats</string>
+    <string name="place_city_search_hint">Search within %1$s</string>
+    <plurals name="place_count">
+        <item quantity="one">%1$d place</item>
+        <item quantity="other">%1$d places</item>
+    </plurals>
+    <string name="place_area_timezone">%1$s · %2$s</string>
+    <string name="place_country_row_description">%1$s, %2$s. Open country.</string>
+    <string name="place_city_row_description">%1$s, %2$s. Timezone %3$s.</string>
+    <string name="place_invalid">This place has incomplete timezone data and can’t be selected.</string>
+    <string name="place_picker_error">The offline place catalog couldn’t be opened. Try again.</string>
     <string name="world_day">+%1$d day</string>
     <string name="world_yesterday">-%1$d day</string>
     <string name="world_today">Today</string>
@@ -61,12 +79,17 @@
     <string name="alarm_label_hint">Label (optional)</string>
     <string name="alarm_timezone">Alarm timezone</string>
     <string name="alarm_timezone_invalid">Choose a timezone from the list</string>
+    <string name="alarm_choose_place">Choose place</string>
     <string name="alarm_schedule_section">Schedule</string>
     <string name="alarm_preferences_section">Alarm preferences</string>
     <string name="alarm_repeat">Repeat</string>
     <string name="alarm_sound">Sound</string>
     <string name="alarm_vibrate">Vibrate</string>
     <string name="alarm_snooze_minutes">Snooze: %1$d min</string>
+    <plurals name="duration_minutes">
+        <item quantity="one">%1$d min</item>
+        <item quantity="other">%1$d min</item>
+    </plurals>
     <string name="alarm_tomorrow">Tomorrow</string>
     <string name="alarm_today_at">Today at %1$s</string>
     <string name="alarm_off">Off</string>
@@ -79,6 +102,7 @@
     <string name="alarm_difficulty_math">Math (easy)</string>
     <string name="alarm_difficulty_math_hard">Math (hard)</string>
     <string name="alarm_difficulty_typing">Type to wake</string>
+    <string name="alarm_challenge_try_again">That answer isn’t correct. Try again.</string>
 
     <!-- Day of week short labels -->
     <string name="day_short_mon">M</string>
@@ -140,7 +164,13 @@
     <string name="widget_world_label">Future Clock — World</string>
     <string name="widget_next_alarm_label">Future Clock — Next Alarm</string>
     <string name="widget_no_alarm">No alarm set</string>
-    <string name="widget_add_cities">Tap to choose cities</string>
+    <string name="widget_temporarily_unavailable">Updating…</string>
+    <string name="widget_time_unavailable">—</string>
+    <string name="widget_add_cities">Choose up to three places</string>
+    <string name="widget_city_limit">You can choose up to three places</string>
+    <string name="widget_choose_one_city">Choose at least one place</string>
+    <string name="widget_city_selected_description">%1$s, %2$s. Selected; tap to remove.</string>
+    <string name="widget_city_unselected_description">%1$s, %2$s. Tap to select.</string>
     <string name="widget_city_format">%1$s</string>
     <string name="widget_time_format">%1$s</string>
     <string name="widget_seconds">:%1$02d</string>
@@ -173,4 +203,5 @@
     <string name="cd_pause">Pause</string>
     <string name="cd_reset">Reset</string>
     <string name="cd_add">Add</string>
+    <string name="cd_back">Back to countries</string>
 </resources>

@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.Build
 import com.futureclock.app.data.db.AppDatabase
 import com.futureclock.app.data.prefs.SettingsRepository
+import com.futureclock.app.data.tz.CityCatalog
 import com.futureclock.app.notification.NotificationChannels
 import com.futureclock.app.widget.WidgetUpdateScheduler
 import com.futureclock.app.ui.theme.ThemeController
@@ -45,6 +46,12 @@ class FutureClockApp : Application() {
         ThemeController.apply(savedTheme)
 
         createNotificationChannels()
+
+        // The first install expands and validates the large offline place catalog. Begin that
+        // work off the main thread so opening a picker never freezes rendering.
+        applicationScope.launch(Dispatchers.IO) {
+            CityCatalog.get(this@FutureClockApp).prepare()
+        }
 
         // Start periodic widget updates. The scheduler itself catches
         // SecurityException from missing exact-alarm permission, but wrap it

@@ -30,12 +30,19 @@ def normalized_source():
 
 
 def render(source, size, round_icon=False):
-    icon = source.resize((size, size), Image.Resampling.LANCZOS).convert("RGBA")
-    if not round_icon:
-        return icon
-    mask = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(mask).ellipse((0, 0, size - 1, size - 1), fill=255)
-    icon.putalpha(mask)
+    padding = max(1, round(size * 0.06))
+    inner_size = size - padding * 2
+    artwork = source.resize((inner_size, inner_size), Image.Resampling.LANCZOS).convert("RGBA")
+    mask = Image.new("L", (inner_size, inner_size), 0)
+    draw = ImageDraw.Draw(mask)
+    bounds = (0, 0, inner_size - 1, inner_size - 1)
+    if round_icon:
+        draw.ellipse(bounds, fill=255)
+    else:
+        draw.rounded_rectangle(bounds, radius=round(inner_size * 0.22), fill=255)
+    artwork.putalpha(mask)
+    icon = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    icon.alpha_composite(artwork, (padding, padding))
     return icon
 
 
