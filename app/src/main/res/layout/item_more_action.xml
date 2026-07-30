@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.FutureClock.Card.Flat"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_m"
+    android:clickable="true"
+    android:focusable="true"
+    android:minHeight="72dp"
+    app:rippleColor="@color/brand_primary_container">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="72dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/space_l"
+        android:paddingVertical="@dimen/space_m">
+
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:background="@drawable/bg_empty_icon"
+            android:contentDescription="@null"
+            android:padding="@dimen/space_m"
+            app:tint="@color/brand_primary"
+            tools:src="@drawable/ic_stopwatch" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_m"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.FutureClock.Section"
+                tools:text="Stopwatch" />
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:textAppearance="@style/TextAppearance.FutureClock.Caption"
+                tools:text="Measure elapsed time and laps" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:text="@string/navigation_chevron"
+            android:textColor="@color/brand_primary"
+            android:textSize="24sp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

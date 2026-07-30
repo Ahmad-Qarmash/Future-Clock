@@ -29,6 +29,9 @@ class TimerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.circularTimer.totalMs = totalMs
         binding.circularTimer.remainingMs = totalMs
+        binding.btnSettings.setOnClickListener {
+            (activity as? com.futureclock.app.MainActivity)?.openSettings()
+        }
 
         binding.presetChips.setOnCheckedStateChangeListener { _, ids ->
             val mins = when (ids.firstOrNull()) {

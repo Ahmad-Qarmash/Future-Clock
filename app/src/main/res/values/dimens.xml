@@ -10,6 +10,14 @@
     <dimen name="space_xxxl">48dp</dimen>
     <dimen name="page_padding">20dp</dimen>
     <dimen name="touch_target">48dp</dimen>
+    <dimen name="icon_s">18dp</dimen>
+    <dimen name="icon_m">24dp</dimen>
+    <dimen name="icon_l">32dp</dimen>
+    <dimen name="stroke_thin">1dp</dimen>
+    <dimen name="stroke_selected">2dp</dimen>
+    <dimen name="elevation_low">1dp</dimen>
+    <dimen name="elevation_medium">4dp</dimen>
+    <dimen name="elevation_high">8dp</dimen>
 
     <dimen name="text_caption">13sp</dimen>
     <dimen name="text_body">15sp</dimen>

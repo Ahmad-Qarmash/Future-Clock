@@ -1,157 +1,398 @@
 package com.futureclock.app.data.tz
 
+import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.system.Os
+import android.util.Log
+import java.io.File
+import java.text.Normalizer
+import java.util.Locale
+import java.util.zip.GZIPInputStream
+
 data class City(
+    val id: Long,
     val name: String,
     val country: String,
+    val countryCode: String,
     val flag: String,
-    val tzId: String
+    val admin1: String,
+    val tzId: String,
+    val population: Long
+) {
+    val areaLabel: String
+        get() = listOf(admin1, country).filter { it.isNotBlank() }.distinct().joinToString(", ")
+}
+
+data class Country(
+    val code: String,
+    val name: String,
+    val flag: String,
+    val placeCount: Int
 )
 
-/** Lightweight curated city catalog (~150 cities) with IANA timezones and country flags. */
-object CityCatalog {
+internal object CitySearch {
+    fun matchExpression(query: String): String = query.trim()
+        .split(Regex("[^\\p{L}\\p{N}]+"))
+        .filter { it.isNotBlank() }
+        .take(8)
+        .joinToString(" AND ") { "$it*" }
+}
 
-    val ALL: List<City> by lazy { buildCatalog() }
+/** Indexed, offline catalog of 235,000+ cities, towns, villages, and administrative seats. */
+class CityCatalog private constructor(context: Context) {
 
-    fun search(query: String): List<City> {
-        if (query.isBlank()) return ALL
-        val q = query.trim().lowercase()
-        return ALL.filter {
-            it.name.lowercase().contains(q) ||
-            it.country.lowercase().contains(q) ||
-            it.tzId.lowercase().contains(q)
+    private val appContext = context.applicationContext
+    private val databaseFile = File(appContext.noBackupFilesDir, DATABASE_NAME)
+
+    @Volatile
+    private var database: SQLiteDatabase? = null
+    @Volatile
+    private var countryCache: List<Country>? = null
+
+    /** Starts installation/validation on a caller-selected background dispatcher. */
+    fun prepare() {
+        readableDatabase()
+    }
+
+    fun featured(limit: Int = DEFAULT_LIMIT): List<City> = queryPlaces(
+        """
+        SELECT id, name, country, country_code, flag, admin1, timezone_id, population
+        FROM places
+        ORDER BY population DESC, name COLLATE NOCASE
+        LIMIT ?
+        """.trimIndent(),
+        arrayOf(limit.coerceIn(1, MAX_LIMIT).toString())
+    )
+
+    fun search(
+        query: String,
+        limit: Int = DEFAULT_LIMIT,
+        countryCode: String? = null
+    ): List<City> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) {
+            return if (countryCode == null) featured(limit) else citiesForCountry(countryCode, limit)
+        }
+        val match = CitySearch.matchExpression(trimmed)
+        if (match.isBlank()) return emptyList()
+
+        val countryClause = if (countryCode == null) "" else "AND p.country_code = ?"
+        val args = buildList {
+            add(match)
+            if (countryCode != null) add(countryCode)
+            add(trimmed)
+            add("$trimmed%")
+            add(limit.coerceIn(1, MAX_LIMIT).toString())
+        }.toTypedArray()
+        return queryPlaces(
+            """
+            SELECT p.id, p.name, p.country, p.country_code, p.flag, p.admin1,
+                   p.timezone_id, p.population
+            FROM places_fts
+            JOIN places p ON p.id = places_fts.docid
+            WHERE places_fts MATCH ?
+            $countryClause
+            ORDER BY
+                CASE
+                    WHEN lower(p.name) = lower(?) THEN 0
+                    WHEN lower(p.name) LIKE lower(?) THEN 1
+                    ELSE 2
+                END,
+                p.population DESC,
+                p.name COLLATE NOCASE,
+                p.id
+            LIMIT ?
+            """.trimIndent(),
+            args
+        )
+    }
+
+    fun countries(query: String = ""): List<Country> {
+        val all = countryCache ?: synchronized(this) {
+            countryCache ?: loadCountries().also { countryCache = it }
+        }
+        val normalizedQuery = normalize(query)
+        if (normalizedQuery.isBlank()) return all
+        return all.filter {
+            normalize(it.name).contains(normalizedQuery) ||
+                normalize(it.code).contains(normalizedQuery)
         }
     }
 
-    private fun buildCatalog(): List<City> = listOf(
-        // North America
-        City("New York", "United States", "\uD83C\uDDFA\uD83C\uDDF8", "America/New_York"),
-        City("Los Angeles", "United States", "\uD83C\uDDFA\uD83C\uDDF8", "America/Los_Angeles"),
-        City("Chicago", "United States", "\uD83C\uDDFA\uD83C\uDDF8", "America/Chicago"),
-        City("Denver", "United States", "\uD83C\uDDFA\uD83C\uDDF8", "America/Denver"),
-        City("Phoenix", "United States", "\uD83C\uDDFA\uD83C\uDDF8", "America/Phoenix"),
-        City("Anchorage", "United States", "\uD83C\uDDFA\uD83C\uDDF8", "America/Anchorage"),
-        City("Honolulu", "United States", "\uD83C\uDDFA\uD83C\uDDF8", "Pacific/Honolulu"),
-        City("Toronto", "Canada", "\uD83C\uDDE8\uD83C\uDDE6", "America/Toronto"),
-        City("Vancouver", "Canada", "\uD83C\uDDE8\uD83C\uDDE6", "America/Vancouver"),
-        City("Montreal", "Canada", "\uD83C\uDDE8\uD83C\uDDE6", "America/Montreal"),
-        City("Mexico City", "Mexico", "\uD83C\uDDF2\uD83C\uDDFD", "America/Mexico_City"),
-
-        // South America
-        City("São Paulo", "Brazil", "\uD83C\uDDE7\uD83C\uDDF7", "America/Sao_Paulo"),
-        City("Rio de Janeiro", "Brazil", "\uD83C\uDDE7\uD83C\uDDF7", "America/Sao_Paulo"),
-        City("Brasília", "Brazil", "\uD83C\uDDE7\uD83C\uDDF7", "America/Sao_Paulo"),
-        City("Buenos Aires", "Argentina", "\uD83C\uDDE6\uD83C\uDDF7", "America/Argentina/Buenos_Aires"),
-        City("Santiago", "Chile", "\uD83C\uDDE8\uD83C\uDDF1", "America/Santiago"),
-        City("Lima", "Peru", "\uD83C\uDDF5\uD83C\uDDEA", "America/Lima"),
-        City("Bogotá", "Colombia", "\uD83C\uDDE8\uD83C\uDDF4", "America/Bogota"),
-        City("Caracas", "Venezuela", "\uD83C\uDDFB\uD83C\uDDEA", "America/Caracas"),
-
-        // Europe
-        City("London", "United Kingdom", "\uD83C\uDDEC\uD83C\uDDE7", "Europe/London"),
-        City("Dublin", "Ireland", "\uD83C\uDDEE\uD83C\uDDEA", "Europe/Dublin"),
-        City("Paris", "France", "\uD83C\uDDEB\uD83C\uDDF7", "Europe/Paris"),
-        City("Berlin", "Germany", "\uD83C\uDDE9\uD83C\uDDEA", "Europe/Berlin"),
-        City("Munich", "Germany", "\uD83C\uDDE9\uD83C\uDDEA", "Europe/Berlin"),
-        City("Hamburg", "Germany", "\uD83C\uDDE9\uD83C\uDDEA", "Europe/Berlin"),
-        City("Frankfurt", "Germany", "\uD83C\uDDE9\uD83C\uDDEA", "Europe/Berlin"),
-        City("Madrid", "Spain", "\uD83C\uDDEA\uD83C\uDDF8", "Europe/Madrid"),
-        City("Barcelona", "Spain", "\uD83C\uDDEA\uD83C\uDDF8", "Europe/Madrid"),
-        City("Lisbon", "Portugal", "\uD83C\uDDF5\uD83C\uDDF9", "Europe/Lisbon"),
-        City("Rome", "Italy", "\uD83C\uDDEE\uD83C\uDDF9", "Europe/Rome"),
-        City("Milan", "Italy", "\uD83C\uDDEE\uD83C\uDDF9", "Europe/Rome"),
-        City("Vienna", "Austria", "\uD83C\uDDE6\uD83C\uDDF9", "Europe/Vienna"),
-        City("Zurich", "Switzerland", "\uD83C\uDDE8\uD83C\uDDED", "Europe/Zurich"),
-        City("Geneva", "Switzerland", "\uD83C\uDDE8\uD83C\uDDED", "Europe/Zurich"),
-        City("Amsterdam", "Netherlands", "\uD83C\uDDF3\uD83C\uDDF1", "Europe/Amsterdam"),
-        City("Brussels", "Belgium", "\uD83C\uDDE7\uD83C\uDDEA", "Europe/Brussels"),
-        City("Copenhagen", "Denmark", "\uD83C\uDDE9\uD83C\uDDF0", "Europe/Copenhagen"),
-        City("Stockholm", "Sweden", "\uD83C\uDDF8\uD83C\uDDEA", "Europe/Stockholm"),
-        City("Oslo", "Norway", "\uD83C\uDDF3\uD83C\uDDF4", "Europe/Oslo"),
-        City("Helsinki", "Finland", "\uD83C\uDDEB\uD83C\uDDEE", "Europe/Helsinki"),
-        City("Reykjavik", "Iceland", "\uD83C\uDDEE\uD83C\uDDF8", "Atlantic/Reykjavik"),
-        City("Athens", "Greece", "\uD83C\uDDEC\uD83C\uDDF7", "Europe/Athens"),
-        City("Warsaw", "Poland", "\uD83C\uDDF5\uD83C\uDDF1", "Europe/Warsaw"),
-        City("Prague", "Czechia", "\uD83C\uDDE8\uD83C\uDDFF", "Europe/Prague"),
-        City("Budapest", "Hungary", "\uD83C\uDDED\uD83C\uDDFA", "Europe/Budapest"),
-        City("Bucharest", "Romania", "\uD83C\uDDF7\uD83C\uDDF4", "Europe/Bucharest"),
-        City("Istanbul", "Türkiye", "\uD83C\uDDF9\uD83C\uDDF7", "Europe/Istanbul"),
-        City("Moscow", "Russia", "\uD83C\uDDF7\uD83C\uDDFA", "Europe/Moscow"),
-        City("Saint Petersburg", "Russia", "\uD83C\uDDF7\uD83C\uDDFA", "Europe/Moscow"),
-        City("Kyiv", "Ukraine", "\uD83C\uDDFA\uD83C\uDDE6", "Europe/Kyiv"),
-
-        // Africa
-        City("Cairo", "Egypt", "\uD83C\uDDFA\uD83C\uDDEC", "Africa/Cairo"),
-        City("Lagos", "Nigeria", "\uD83C\uDDF3\uD83C\uDDEC", "Africa/Lagos"),
-        City("Nairobi", "Kenya", "\uD83C\uDDF0\uD83C\uDDEA", "Africa/Nairobi"),
-        City("Cape Town", "South Africa", "\uD83C\uDDFF\uD83C\uDDE6", "Africa/Johannesburg"),
-        City("Johannesburg", "South Africa", "\uD83C\uDDFF\uD83C\uDDE6", "Africa/Johannesburg"),
-        City("Casablanca", "Morocco", "\uD83C\uDDF2\uD83C\uDDE6", "Africa/Casablanca"),
-        City("Algiers", "Algeria", "\uD83C\uDDF9\uD83C\uDDFF", "Africa/Algiers"),
-        City("Tunis", "Tunisia", "\uD83C\uDDF9\uD83C\uDDF3", "Africa/Tunis"),
-        City("Addis Ababa", "Ethiopia", "\uD83C\uDDEA\uD83C\uDDF9", "Africa/Addis_Ababa"),
-
-        // Middle East
-        City("Dubai", "United Arab Emirates", "\uD83C\uDDE6\uD83C\uDDEA", "Asia/Dubai"),
-        City("Abu Dhabi", "United Arab Emirates", "\uD83C\uDDE6\uD83C\uDDEA", "Asia/Dubai"),
-        City("Riyadh", "Saudi Arabia", "\uD83C\uDDF8\uD83C\uDDE6", "Asia/Riyadh"),
-        City("Jeddah", "Saudi Arabia", "\uD83C\uDDF8\uD83C\uDDE6", "Asia/Riyadh"),
-        City("Doha", "Qatar", "\uD83C\uDDF6\uD83C\uDDE6", "Asia/Qatar"),
-        City("Kuwait City", "Kuwait", "\uD83C\uDDF0\uD83C\uDDFC", "Asia/Kuwait"),
-        City("Manama", "Bahrain", "\uD83C\uDDE7\uD83C\uDDE7", "Asia/Bahrain"),
-        City("Muscat", "Oman", "\uD83C\uDDF4\uD83C\uDDF2", "Asia/Muscat"),
-        City("Amman", "Jordan", "\uD83C\uDDEF\uD83C\uDDED", "Asia/Amman"),
-        City("Beirut", "Lebanon", "\uD83C\uDDF1\uD83C\uDDE7", "Asia/Beirut"),
-        City("Tel Aviv", "Israel", "\uD83C\uDDEE\uD83C\uDDF1", "Asia/Jerusalem"),
-        City("Jerusalem", "Israel", "\uD83C\uDDEE\uD83C\uDDF1", "Asia/Jerusalem"),
-        City("Tehran", "Iran", "\uD83C\uDDEE\uD83C\uDDF7", "Asia/Tehran"),
-        City("Baghdad", "Iraq", "\uD83C\uDDE6\uD83C\uDDE6", "Asia/Baghdad"),
-
-        // South & Central Asia
-        City("Mumbai", "India", "\uD83C\uDDEE\uD83C\uDDF3", "Asia/Kolkata"),
-        City("Delhi", "India", "\uD83C\uDDEE\uD83C\uDDF3", "Asia/Kolkata"),
-        City("Bangalore", "India", "\uD83C\uDDEE\uD83C\uDDF3", "Asia/Kolkata"),
-        City("Kolkata", "India", "\uD83C\uDDEE\uD83C\uDDF3", "Asia/Kolkata"),
-        City("Chennai", "India", "\uD83C\uDDEE\uD83C\uDDF3", "Asia/Kolkata"),
-        City("Hyderabad", "India", "\uD83C\uDDEE\uD83C\uDDF3", "Asia/Kolkata"),
-        City("Karachi", "Pakistan", "\uD83C\uDDF5\uD83C\uDDF0", "Asia/Karachi"),
-        City("Lahore", "Pakistan", "\uD83C\uDDF5\uD83C\uDDF0", "Asia/Karachi"),
-        City("Islamabad", "Pakistan", "\uD83C\uDDF5\uD83C\uDDF0", "Asia/Karachi"),
-        City("Dhaka", "Bangladesh", "\uD83C\uDDE9\uD83C\uDDE9", "Asia/Dhaka"),
-        City("Colombo", "Sri Lanka", "\uD83C\uDDF1\uD83C\uDDF0", "Asia/Colombo"),
-        City("Kathmandu", "Nepal", "\uD83C\uDDF3\uD83C\uDDF5", "Asia/Kathmandu"),
-
-        // East & Southeast Asia
-        City("Beijing", "China", "\uD83C\uDDE8\uD83C\uDDF3", "Asia/Shanghai"),
-        City("Shanghai", "China", "\uD83C\uDDE8\uD83C\uDDF3", "Asia/Shanghai"),
-        City("Shenzhen", "China", "\uD83C\uDDE8\uD83C\uDDF3", "Asia/Shanghai"),
-        City("Hong Kong", "China", "\uD83C\uDDED\uD83C\uDDF0", "Asia/Hong_Kong"),
-        City("Taipei", "Taiwan", "\uD83C\uDDF9\uD83C\uDDFC", "Asia/Taipei"),
-        City("Tokyo", "Japan", "\uD83C\uDDEF\uD83C\uDDF5", "Asia/Tokyo"),
-        City("Osaka", "Japan", "\uD83C\uDDEF\uD83C\uDDF5", "Asia/Tokyo"),
-        City("Kyoto", "Japan", "\uD83C\uDDEF\uD83C\uDDF5", "Asia/Tokyo"),
-        City("Seoul", "South Korea", "\uD83C\uDDF0\uD83C\uDDF7", "Asia/Seoul"),
-        City("Busan", "South Korea", "\uD83C\uDDF0\uD83C\uDDF7", "Asia/Seoul"),
-        City("Pyongyang", "North Korea", "\uD83C\uDDF0\uD83C\uDDF5", "Asia/Pyongyang"),
-        City("Singapore", "Singapore", "\uD83C\uDDF8\uD83C\uDDEC", "Asia/Singapore"),
-        City("Kuala Lumpur", "Malaysia", "\uD83C\uDDF2\uD83C\uDDFE", "Asia/Kuala_Lumpur"),
-        City("Bangkok", "Thailand", "\uD83C\uDDF9\uD83C\uDDED", "Asia/Bangkok"),
-        City("Jakarta", "Indonesia", "\uD83C\uDDEE\uD83C\uDDE9", "Asia/Jakarta"),
-        City("Bali", "Indonesia", "\uD83C\uDDEE\uD83C\uDDE9", "Asia/Makassar"),
-        City("Manila", "Philippines", "\uD83C\uDDF5\uD83C\uDDED", "Asia/Manila"),
-        City("Hanoi", "Vietnam", "\uD83C\uDDFB\uD83C\uDDF3", "Asia/Ho_Chi_Minh"),
-        City("Ho Chi Minh City", "Vietnam", "\uD83C\uDDFB\uD83C\uDDF3", "Asia/Ho_Chi_Minh"),
-
-        // Oceania
-        City("Sydney", "Australia", "\uD83C\uDDE6\uD83C\uDDFA", "Australia/Sydney"),
-        City("Melbourne", "Australia", "\uD83C\uDDE6\uD83C\uDDFA", "Australia/Melbourne"),
-        City("Brisbane", "Australia", "\uD83C\uDDE6\uD83C\uDDFA", "Australia/Brisbane"),
-        City("Perth", "Australia", "\uD83C\uDDE6\uD83C\uDDFA", "Australia/Perth"),
-        City("Adelaide", "Australia", "\uD83C\uDDE6\uD83C\uDDFA", "Australia/Adelaide"),
-        City("Auckland", "New Zealand", "\uD83C\uDDF3\uD83C\uDDFF", "Pacific/Auckland"),
-        City("Wellington", "New Zealand", "\uD83C\uDDF3\uD83C\uDDFF", "Pacific/Auckland"),
-        City("Fiji", "Fiji", "\uD83C\uDDEB\uD83C\uDDEF", "Pacific/Fiji"),
-
-        // UTC
-        City("UTC", "Coordinated Universal Time", "\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F", "UTC")
+    fun citiesForCountry(countryCode: String, limit: Int = DEFAULT_LIMIT): List<City> = queryPlaces(
+        """
+        SELECT id, name, country, country_code, flag, admin1, timezone_id, population
+        FROM places
+        WHERE country_code = ?
+        ORDER BY population DESC, name COLLATE NOCASE, id
+        LIMIT ?
+        """.trimIndent(),
+        arrayOf(countryCode, limit.coerceIn(1, MAX_LIMIT).toString())
     )
+
+    fun findById(placeId: Long): City? = queryPlaces(
+        """
+        SELECT id, name, country, country_code, flag, admin1, timezone_id, population
+        FROM places
+        WHERE id = ?
+        LIMIT 1
+        """.trimIndent(),
+        arrayOf(placeId.toString())
+    ).firstOrNull()
+
+    fun findByTimeZone(timeZoneId: String): City? = queryPlaces(
+        """
+        SELECT id, name, country, country_code, flag, admin1, timezone_id, population
+        FROM places
+        WHERE timezone_id = ?
+        ORDER BY population DESC
+        LIMIT 1
+        """.trimIndent(),
+        arrayOf(timeZoneId)
+    ).firstOrNull()
+
+    fun placeCount(): Int {
+        readableDatabase().rawQuery(
+            "SELECT value FROM metadata WHERE key = 'place_count'",
+            emptyArray()
+        ).use { cursor ->
+            return if (cursor.moveToFirst()) cursor.getString(0).toIntOrNull() ?: 0 else 0
+        }
+    }
+
+    fun timeZoneIds(): List<String> {
+        val ids = ArrayList<String>()
+        readableDatabase().rawQuery(
+            "SELECT DISTINCT timezone_id FROM places ORDER BY timezone_id",
+            emptyArray()
+        ).use { cursor ->
+            while (cursor.moveToNext()) ids += cursor.getString(0)
+        }
+        return ids
+    }
+
+    private fun queryPlaces(sql: String, args: Array<String>): List<City> {
+        val cities = ArrayList<City>()
+        readableDatabase().rawQuery(sql, args).use { cursor ->
+            while (cursor.moveToNext()) {
+                cities += City(
+                    id = cursor.getLong(0),
+                    name = cursor.getString(1),
+                    country = cursor.getString(2),
+                    countryCode = cursor.getString(3),
+                    flag = cursor.getString(4),
+                    admin1 = cursor.getString(5),
+                    tzId = cursor.getString(6),
+                    population = cursor.getLong(7)
+                )
+            }
+        }
+        return cities
+    }
+
+    private fun loadCountries(): List<Country> {
+        val result = ArrayList<Country>()
+        readableDatabase().rawQuery(
+            """
+            SELECT country_code, country, flag, COUNT(*)
+            FROM places
+            GROUP BY country_code, country, flag
+            ORDER BY country COLLATE NOCASE, country_code
+            """.trimIndent(),
+            emptyArray()
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                result += Country(
+                    code = cursor.getString(0),
+                    name = cursor.getString(1),
+                    flag = cursor.getString(2),
+                    placeCount = cursor.getInt(3)
+                )
+            }
+        }
+        return result
+    }
+
+    private fun readableDatabase(): SQLiteDatabase {
+        database?.let { if (it.isOpen) return it }
+        return synchronized(this) {
+            database?.takeIf { it.isOpen } ?: run {
+                installDatabaseIfNeeded()
+                openValidatedDatabase().also { database = it }
+            }
+        }
+    }
+
+    private fun installDatabaseIfNeeded() {
+        val installedVersion = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getInt(KEY_INSTALLED_VERSION, 0)
+        if (
+            installedVersion == CATALOG_VERSION &&
+            databaseFile.isFile &&
+            databaseFile.length() > MIN_DATABASE_BYTES &&
+            isDatabaseCurrent(databaseFile)
+        ) return
+
+        check(databaseFile.parentFile?.mkdirs() != false || databaseFile.parentFile?.isDirectory == true) {
+            "Unable to create the place catalog directory"
+        }
+        val temporary = File(databaseFile.parentFile, "${databaseFile.name}.tmp")
+        if (temporary.exists()) check(temporary.delete()) { "Unable to remove a partial place catalog" }
+        try {
+            appContext.assets.open(ASSET_NAME).use { compressed ->
+                GZIPInputStream(compressed).use { input ->
+                    temporary.outputStream().buffered().use { output -> input.copyTo(output) }
+                }
+            }
+            check(temporary.length() > MIN_DATABASE_BYTES) { "Place catalog asset is incomplete" }
+            validateNewDatabase(temporary)
+
+            // rename(2) atomically replaces the old disposable catalog on the same filesystem.
+            // User alarms and world-clock selections live in Room's separate future_clock.db.
+            Os.rename(temporary.absolutePath, databaseFile.absolutePath)
+            deleteSidecar(databaseFile, "-journal")
+            deleteSidecar(databaseFile, "-wal")
+            deleteSidecar(databaseFile, "-shm")
+            appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putInt(KEY_INSTALLED_VERSION, CATALOG_VERSION)
+                .apply()
+        } catch (error: Exception) {
+            deleteSidecar(temporary, "-journal")
+            deleteSidecar(temporary, "-wal")
+            deleteSidecar(temporary, "-shm")
+            if (temporary.exists() && !temporary.delete()) {
+                Log.w(TAG, "Unable to remove failed catalog installation ${temporary.name}")
+            }
+            throw error
+        }
+    }
+
+    private fun openValidatedDatabase(): SQLiteDatabase {
+        return try {
+            openReadOnly(databaseFile).also(::validateOpenDatabase)
+        } catch (_: RuntimeException) {
+            database?.close()
+            database = null
+            appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .remove(KEY_INSTALLED_VERSION)
+                .apply()
+            installDatabaseIfNeeded()
+            openReadOnly(databaseFile).also(::validateOpenDatabase)
+        }
+    }
+
+    private fun isDatabaseCurrent(file: File): Boolean = runCatching {
+        openReadOnly(file).use(::validateOpenDatabase)
+    }.isSuccess
+
+    private fun validateOpenDatabase(db: SQLiteDatabase) {
+        check(db.version == CATALOG_VERSION) {
+            "Unsupported place catalog version ${db.version}"
+        }
+        db.rawQuery(
+            """
+            SELECT
+                (SELECT value FROM metadata WHERE key = 'catalog_version'),
+                (SELECT value FROM metadata WHERE key = 'place_count'),
+                EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'places'),
+                EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'places_fts'),
+                EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = 'places_country_rank_idx')
+            """.trimIndent(),
+            emptyArray()
+        ).use { cursor ->
+            check(
+                cursor.moveToFirst() &&
+                    cursor.getString(0).toIntOrNull() == CATALOG_VERSION &&
+                    (cursor.getString(1).toIntOrNull() ?: 0) >= MIN_PLACE_COUNT &&
+                    cursor.getInt(2) == 1 &&
+                    cursor.getInt(3) == 1 &&
+                    cursor.getInt(4) == 1
+            ) {
+                "Place catalog schema or metadata is missing"
+            }
+        }
+    }
+
+    private fun validateNewDatabase(file: File) {
+        // Android vendors may implement FTS integrity checks through the documented
+        // INSERT INTO places_fts(places_fts) VALUES('integrity-check') command. That
+        // command is logically read-only but requires a writable SQLite handle on
+        // Samsung devices. This is the private temporary copy, never the installed DB.
+        openForValidation(file).use { db ->
+            validateOpenDatabase(db)
+            db.rawQuery("PRAGMA quick_check", emptyArray()).use { cursor ->
+                check(cursor.moveToFirst() && cursor.getString(0) == "ok" && !cursor.moveToNext()) {
+                    "Place catalog integrity check failed"
+                }
+            }
+        }
+        deleteSidecar(file, "-journal")
+        deleteSidecar(file, "-wal")
+        deleteSidecar(file, "-shm")
+    }
+
+    private fun deleteSidecar(file: File, suffix: String) {
+        val sidecar = File(file.absolutePath + suffix)
+        if (sidecar.exists() && !sidecar.delete()) {
+            Log.w(TAG, "Unable to remove stale place catalog sidecar ${sidecar.name}")
+        }
+    }
+
+    private fun openReadOnly(file: File): SQLiteDatabase = SQLiteDatabase.openDatabase(
+        file.absolutePath,
+        null,
+        SQLiteDatabase.OPEN_READONLY or SQLiteDatabase.NO_LOCALIZED_COLLATORS
+    )
+
+    private fun openForValidation(file: File): SQLiteDatabase = SQLiteDatabase.openDatabase(
+        file.absolutePath,
+        null,
+        SQLiteDatabase.OPEN_READWRITE or SQLiteDatabase.NO_LOCALIZED_COLLATORS
+    )
+
+    private fun normalize(value: String): String = Normalizer.normalize(
+        value.trim().lowercase(Locale.ROOT),
+        Normalizer.Form.NFD
+    ).replace(Regex("\\p{M}+"), "")
+        .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
+        .trim()
+
+    internal fun closeForTest() {
+        synchronized(this) {
+            database?.close()
+            database = null
+            countryCache = null
+        }
+    }
+
+    companion object {
+        // Do not use .gz: Android's asset merger transparently expands that extension and
+        // changes its packaged name. .dbz keeps the deterministic gzip bytes intact.
+        private const val ASSET_NAME = "places-v2.sqlite.dbz"
+        private const val DATABASE_NAME = "places-v1.sqlite"
+        private const val MIN_DATABASE_BYTES = 1_000_000L
+        private const val MIN_PLACE_COUNT = 200_000
+        private const val DEFAULT_LIMIT = 250
+        private const val MAX_LIMIT = 500
+        private const val CATALOG_VERSION = 2
+        private const val PREFS_NAME = "place_catalog_install"
+        private const val KEY_INSTALLED_VERSION = "installed_version"
+        private const val TAG = "CityCatalog"
+
+        @Volatile
+        private var INSTANCE: CityCatalog? = null
+
+        fun get(context: Context): CityCatalog = INSTANCE ?: synchronized(this) {
+            INSTANCE ?: CityCatalog(context).also { INSTANCE = it }
+        }
+
+        internal fun resetForTest() {
+            synchronized(this) {
+                INSTANCE?.closeForTest()
+                INSTANCE = null
+            }
+        }
+    }
 }

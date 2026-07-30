@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.futureclock.app.R
 import com.futureclock.app.data.db.WorldCityEntity
 import com.futureclock.app.databinding.ItemWorldCityBinding
+import com.futureclock.app.util.AlarmMath
 import com.futureclock.app.util.TimeFormat
 import java.util.Calendar
 import java.util.Collections
@@ -40,7 +41,7 @@ class WorldAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val city = items[position]
-        val zone = TimeZone.getTimeZone(city.tzId)
+        val zone = AlarmMath.timeZone(city.tzId)
         val cal = Calendar.getInstance(zone)
         val h = cal.get(Calendar.HOUR_OF_DAY)
         val m = cal.get(Calendar.MINUTE)

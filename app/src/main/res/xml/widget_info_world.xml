@@ -12,4 +12,5 @@
     android:previewLayout="@layout/widget_world_medium"
     android:updatePeriodMillis="0"
     android:description="@string/widget_world_label"
+    android:widgetFeatures="reconfigurable|configuration_optional"
     android:configure="com.futureclock.app.widget.WorldClockConfigActivity" />

@@ -17,6 +17,7 @@ import com.futureclock.app.databinding.ActivityMainBinding
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.ui.alarm.AlarmFragment
 import com.futureclock.app.ui.clock.ClockFragment
+import com.futureclock.app.ui.more.MoreFragment
 import com.futureclock.app.ui.settings.SettingsFragment
 import com.futureclock.app.ui.stopwatch.StopwatchFragment
 import com.futureclock.app.ui.timer.TimerFragment
@@ -50,6 +51,10 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        if (intent.hasExtra(EXTRA_DEFAULT_TAB)) {
+            binding.bottomNav.selectedItemId =
+                intent.getIntExtra(EXTRA_DEFAULT_TAB, R.id.nav_clock)
+        }
         handleDeepLink(intent)
     }
 
@@ -59,13 +64,19 @@ class MainActivity : AppCompatActivity() {
             AdManager.maybeShowInterstitial(this, AdManager.Trigger.TAB_CHANGE)
             true
         }
-        val defaultTab = intent.getIntExtra("default_tab", R.id.nav_clock)
+        val defaultTab = intent.getIntExtra(EXTRA_DEFAULT_TAB, R.id.nav_clock)
         if (savedInstanceState == null) {
             binding.bottomNav.selectedItemId = defaultTab
         }
     }
 
     private fun selectTab(itemId: Int) {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStackImmediate(
+                null,
+                androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+            )
+        }
         val tag = "tab_$itemId"
         val fm = supportFragmentManager
         val existing = fm.findFragmentByTag(tag)
@@ -83,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         R.id.nav_world -> WorldFragment()
         R.id.nav_alarm -> AlarmFragment()
         R.id.nav_timer -> TimerFragment()
-        R.id.nav_stopwatch -> StopwatchFragment()
+        R.id.nav_more -> MoreFragment()
         else -> ClockFragment()
     }
 
@@ -97,6 +108,15 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    /** Stopwatch remains one predictable tap inside More and retains normal Back behavior. */
+    fun openStopwatchFromMore() {
+        supportFragmentManager.beginTransaction()
+            .setReorderingAllowed(true)
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+            .replace(R.id.fragment_container, StopwatchFragment(), "more_stopwatch")
+            .addToBackStack(null)
+            .commit()
+    }
 
     private fun setupBannerAd() {
         val playServices = com.google.android.gms.common.GoogleApiAvailability.getInstance()
@@ -138,9 +158,16 @@ class MainActivity : AppCompatActivity() {
             Actions.ACTION_OPEN_WORLD_TAB -> R.id.nav_world
             Actions.ACTION_OPEN_ALARM_TAB -> R.id.nav_alarm
             Actions.ACTION_OPEN_TIMER_TAB -> R.id.nav_timer
-            Actions.ACTION_OPEN_STOPWATCH_TAB -> R.id.nav_stopwatch
+            Actions.ACTION_OPEN_STOPWATCH_TAB -> R.id.nav_more
             else -> return
         }
         binding.bottomNav.selectedItemId = tab
+        if (action == Actions.ACTION_OPEN_STOPWATCH_TAB) {
+            binding.bottomNav.post { openStopwatchFromMore() }
+        }
+    }
+
+    companion object {
+        const val EXTRA_DEFAULT_TAB = "default_tab"
     }
 }

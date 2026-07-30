@@ -6,7 +6,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "world_cities")
 data class WorldCityEntity(
-    @PrimaryKey val tzId: String,
+    @PrimaryKey
+    @ColumnInfo(name = "location_id") val locationId: Long,
+    val tzId: String,
     @ColumnInfo(name = "display_name") val displayName: String,
     @ColumnInfo(name = "country") val country: String,
     @ColumnInfo(name = "flag") val flag: String,

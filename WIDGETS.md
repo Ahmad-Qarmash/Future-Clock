@@ -52,10 +52,12 @@ Resizable. Picks layouts by the user-selected height:
 
 Each row shows the country flag + city name on the left and the local time on the
 right. Cities are configured at widget-add time via `WorldClockConfigActivity`
-which lets the user search the curated `CityCatalog` of 150+ cities and pick
-1–3 IANA timezones. The selected list is persisted in a `SharedPreferences`
+which lets the user search the offline `CityCatalog` of 235,000+ places and pick
+1–3 locations. The complete selected records are persisted in `SharedPreferences`
 keyed by widget instance id, so each pinned widget can have a different set of
-cities.
+cities and remains renderable after process death or catalog replacement.
+Launchers with reconfiguration support can reopen the picker for an existing
+widget.
 
 ## 4. Next alarm widget
 

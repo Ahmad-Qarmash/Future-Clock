@@ -27,6 +27,9 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val app = requireContext().applicationContext as FutureClockApp
+        binding.btnBack.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
         binding.textVersion.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -35,7 +38,11 @@ class SettingsFragment : Fragment() {
             binding.switchSeconds.isChecked = settings.showSeconds.first()
             val snooze = settings.snoozeMinutes.first()
             binding.sliderSnooze.value = snooze.toFloat()
-            binding.textSnoozeValue.text = "$snooze min"
+            binding.textSnoozeValue.text = resources.getQuantityString(
+                R.plurals.duration_minutes,
+                snooze,
+                snooze
+            )
             val theme = settings.themeMode.first()
             binding.themeGroup.check(
                 when (theme) {
@@ -49,7 +56,11 @@ class SettingsFragment : Fragment() {
             binding.switchSeconds.setOnCheckedChangeListener { _, checked -> viewLifecycleOwner.lifecycleScope.launch { settings.setShowSeconds(checked) } }
             binding.sliderSnooze.addOnChangeListener { _, value, _ ->
                 val v = value.toInt()
-                binding.textSnoozeValue.text = "$v min"
+                binding.textSnoozeValue.text = resources.getQuantityString(
+                    R.plurals.duration_minutes,
+                    v,
+                    v
+                )
                 viewLifecycleOwner.lifecycleScope.launch { settings.setSnoozeMinutes(v) }
             }
             binding.themeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
