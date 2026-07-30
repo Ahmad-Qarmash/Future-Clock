@@ -27,6 +27,9 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val app = requireContext().applicationContext as FutureClockApp
+        binding.btnBack.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
         binding.textVersion.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
 
         viewLifecycleOwner.lifecycleScope.launch {

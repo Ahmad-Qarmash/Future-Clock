@@ -3,6 +3,7 @@ package com.futureclock.app.data.tz
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.system.Os
+import android.util.Log
 import java.io.File
 import java.text.Normalizer
 import java.util.Locale
@@ -237,23 +238,34 @@ class CityCatalog private constructor(context: Context) {
         }
         val temporary = File(databaseFile.parentFile, "${databaseFile.name}.tmp")
         if (temporary.exists()) check(temporary.delete()) { "Unable to remove a partial place catalog" }
-        appContext.assets.open(ASSET_NAME).use { compressed ->
-            GZIPInputStream(compressed).use { input ->
-                temporary.outputStream().buffered().use { output -> input.copyTo(output) }
+        try {
+            appContext.assets.open(ASSET_NAME).use { compressed ->
+                GZIPInputStream(compressed).use { input ->
+                    temporary.outputStream().buffered().use { output -> input.copyTo(output) }
+                }
             }
-        }
-        check(temporary.length() > MIN_DATABASE_BYTES) { "Place catalog asset is incomplete" }
-        validateNewDatabase(temporary)
+            check(temporary.length() > MIN_DATABASE_BYTES) { "Place catalog asset is incomplete" }
+            validateNewDatabase(temporary)
 
-        // rename(2) atomically replaces the old disposable catalog on the same filesystem.
-        // User alarms and world-clock selections live in Room's separate future_clock.db.
-        Os.rename(temporary.absolutePath, databaseFile.absolutePath)
-        deleteSidecar("-wal")
-        deleteSidecar("-shm")
-        appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putInt(KEY_INSTALLED_VERSION, CATALOG_VERSION)
-            .apply()
+            // rename(2) atomically replaces the old disposable catalog on the same filesystem.
+            // User alarms and world-clock selections live in Room's separate future_clock.db.
+            Os.rename(temporary.absolutePath, databaseFile.absolutePath)
+            deleteSidecar(databaseFile, "-journal")
+            deleteSidecar(databaseFile, "-wal")
+            deleteSidecar(databaseFile, "-shm")
+            appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putInt(KEY_INSTALLED_VERSION, CATALOG_VERSION)
+                .apply()
+        } catch (error: Exception) {
+            deleteSidecar(temporary, "-journal")
+            deleteSidecar(temporary, "-wal")
+            deleteSidecar(temporary, "-shm")
+            if (temporary.exists() && !temporary.delete()) {
+                Log.w(TAG, "Unable to remove failed catalog installation ${temporary.name}")
+            }
+            throw error
+        }
     }
 
     private fun openValidatedDatabase(): SQLiteDatabase {
@@ -304,7 +316,11 @@ class CityCatalog private constructor(context: Context) {
     }
 
     private fun validateNewDatabase(file: File) {
-        openReadOnly(file).use { db ->
+        // Android vendors may implement FTS integrity checks through the documented
+        // INSERT INTO places_fts(places_fts) VALUES('integrity-check') command. That
+        // command is logically read-only but requires a writable SQLite handle on
+        // Samsung devices. This is the private temporary copy, never the installed DB.
+        openForValidation(file).use { db ->
             validateOpenDatabase(db)
             db.rawQuery("PRAGMA quick_check", emptyArray()).use { cursor ->
                 check(cursor.moveToFirst() && cursor.getString(0) == "ok" && !cursor.moveToNext()) {
@@ -312,12 +328,15 @@ class CityCatalog private constructor(context: Context) {
                 }
             }
         }
+        deleteSidecar(file, "-journal")
+        deleteSidecar(file, "-wal")
+        deleteSidecar(file, "-shm")
     }
 
-    private fun deleteSidecar(suffix: String) {
-        val sidecar = File(databaseFile.absolutePath + suffix)
-        if (sidecar.exists()) check(sidecar.delete()) {
-            "Unable to remove stale place catalog sidecar ${sidecar.name}"
+    private fun deleteSidecar(file: File, suffix: String) {
+        val sidecar = File(file.absolutePath + suffix)
+        if (sidecar.exists() && !sidecar.delete()) {
+            Log.w(TAG, "Unable to remove stale place catalog sidecar ${sidecar.name}")
         }
     }
 
@@ -325,6 +344,12 @@ class CityCatalog private constructor(context: Context) {
         file.absolutePath,
         null,
         SQLiteDatabase.OPEN_READONLY or SQLiteDatabase.NO_LOCALIZED_COLLATORS
+    )
+
+    private fun openForValidation(file: File): SQLiteDatabase = SQLiteDatabase.openDatabase(
+        file.absolutePath,
+        null,
+        SQLiteDatabase.OPEN_READWRITE or SQLiteDatabase.NO_LOCALIZED_COLLATORS
     )
 
     private fun normalize(value: String): String = Normalizer.normalize(
@@ -354,6 +379,7 @@ class CityCatalog private constructor(context: Context) {
         private const val CATALOG_VERSION = 2
         private const val PREFS_NAME = "place_catalog_install"
         private const val KEY_INSTALLED_VERSION = "installed_version"
+        private const val TAG = "CityCatalog"
 
         @Volatile
         private var INSTANCE: CityCatalog? = null

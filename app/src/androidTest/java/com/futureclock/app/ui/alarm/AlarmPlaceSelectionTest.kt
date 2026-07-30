@@ -19,13 +19,17 @@ import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.Intents.intending
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.recyclerview.widget.RecyclerView
 import com.futureclock.app.FutureClockApp
 import com.futureclock.app.R
 import com.futureclock.app.data.db.AlarmEntity
+import com.futureclock.app.data.db.WorldCityEntity
 import com.futureclock.app.ui.world.WorldPickerActivity
 import com.futureclock.app.util.AlarmMath
 import kotlinx.coroutines.Dispatchers
@@ -73,9 +77,9 @@ class AlarmPlaceSelectionTest {
             Intent(context, AlarmEditActivity::class.java)
         )
 
-        onView(withId(R.id.timezone_picker)).perform(click())
+        onView(withId(R.id.timezone_card)).perform(scrollTo(), click())
         eventually {
-            onView(withId(R.id.timezone_picker))
+            onView(withId(R.id.timezone_id))
                 .check(matches(withText(containsString("America/Los_Angeles"))))
         }
         editor.onActivity {
@@ -87,10 +91,10 @@ class AlarmPlaceSelectionTest {
 
         editor.recreate()
         eventually {
-            onView(withId(R.id.timezone_picker))
+            onView(withId(R.id.timezone_id))
                 .check(matches(withText(containsString("America/Los_Angeles"))))
         }
-        onView(withId(R.id.btn_save)).perform(scrollTo(), click())
+        onView(withId(R.id.btn_save)).perform(click())
 
         var saved: AlarmEntity? = null
         eventually {
@@ -103,6 +107,8 @@ class AlarmPlaceSelectionTest {
         }
         assertEquals(20, saved!!.hour)
         assertEquals(0, saved!!.minute)
+        assertEquals("Los Angeles", saved!!.placeName)
+        assertEquals("America/Los_Angeles", saved!!.timeZoneId)
         val california = TimeZone.getTimeZone("America/Los_Angeles")
         val scheduledWallTime = Calendar.getInstance(california).apply {
             timeInMillis = saved!!.nextTriggerMs
@@ -129,7 +135,106 @@ class AlarmPlaceSelectionTest {
             Intent(context, AlarmEditActivity::class.java).putExtra("alarm_id", saved!!.id)
         ).use {
             eventually {
+                onView(withId(R.id.timezone_id))
+                    .check(matches(withText(containsString("America/Los_Angeles"))))
+            }
+        }
+    }
+
+    @Test
+    fun trackedWorldClockIsSuggestedAndAlarmSurvivesItsRemoval() {
+        val tracked = WorldCityEntity(
+            locationId = 5_368_361L,
+            tzId = "America/Los_Angeles",
+            displayName = "Los Angeles",
+            country = "California, United States",
+            flag = "🇺🇸",
+            sortOrder = 1
+        )
+        runBlocking(Dispatchers.IO) {
+            (context.applicationContext as FutureClockApp).database.worldCityDao().insert(tracked)
+        }
+
+        val picker = ActivityScenario.launchActivityForResult<WorldPickerActivity>(
+            Intent(context, WorldPickerActivity::class.java)
+                .putExtra(WorldPickerActivity.EXTRA_MODE, WorldPickerActivity.MODE_ALARM)
+        )
+        eventually {
+            onView(withText(R.string.place_your_world_clocks)).check(matches(withText(
+                R.string.place_your_world_clocks
+            )))
+        }
+        onView(withId(R.id.search))
+            .perform(replaceText("  los angeles  "), closeSoftKeyboard())
+        waitForPickerResults()
+        eventually {
+            // A duplicate catalog row would make this matcher ambiguous.
+            onView(withText("Los Angeles")).check(matches(withText("Los Angeles")))
+        }
+        onView(withId(R.id.recycler)).perform(
+            RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
+                hasDescendant(withText("Los Angeles")),
+                click()
+            )
+        )
+        val result = picker.result
+        assertEquals(Activity.RESULT_OK, result.resultCode)
+        val data = requireNotNull(result.resultData)
+        assertEquals(5_368_361L, data.getLongExtra(WorldPickerActivity.EXTRA_PLACE_ID, 0L))
+        assertEquals(
+            "America/Los_Angeles",
+            data.getStringExtra(WorldPickerActivity.EXTRA_TIMEZONE_ID)
+        )
+        assertEquals(true, data.getBooleanExtra(WorldPickerActivity.EXTRA_SOURCE_TRACKED, false))
+        picker.close()
+
+        Intents.init()
+        intending(hasComponent(WorldPickerActivity::class.java.name)).respondWith(
+            Instrumentation.ActivityResult(Activity.RESULT_OK, data)
+        )
+        val editor = ActivityScenario.launch<AlarmEditActivity>(
+            Intent(context, AlarmEditActivity::class.java)
+        )
+        onView(withId(R.id.timezone_card)).perform(scrollTo(), click())
+        eventually {
+            onView(withId(R.id.timezone_picker))
+                .check(matches(withText(containsString("Los Angeles"))))
+            onView(withId(R.id.timezone_source))
+                .check(matches(withText(R.string.alarm_timezone_from_world)))
+        }
+        editor.onActivity {
+            it.findViewById<TimePicker>(R.id.time_picker).apply {
+                hour = 20
+                minute = 0
+            }
+        }
+        onView(withId(R.id.btn_save)).perform(click())
+
+        val saved = eventuallyValue {
+            runBlocking(Dispatchers.IO) {
+                (context.applicationContext as FutureClockApp).database.alarmDao()
+                    .getAll()
+                .singleOrNull()
+            }
+        }
+        editor.close()
+        assertEquals(tracked.locationId, saved.placeId)
+        assertEquals(tracked.displayName, saved.placeName)
+        assertEquals(tracked.country, saved.placeCountry)
+        assertEquals(tracked.tzId, saved.timeZoneId)
+
+        runBlocking(Dispatchers.IO) {
+            (context.applicationContext as FutureClockApp).database.worldCityDao()
+                .deleteByLocationId(tracked.locationId)
+        }
+        ActivityScenario.launch<AlarmEditActivity>(
+            Intent(context, AlarmEditActivity::class.java)
+                .putExtra(AlarmEditActivity.EXTRA_ALARM_ID, saved.id)
+        ).use {
+            eventually {
                 onView(withId(R.id.timezone_picker))
+                    .check(matches(withText(containsString("Los Angeles"))))
+                onView(withId(R.id.timezone_id))
                     .check(matches(withText(containsString("America/Los_Angeles"))))
             }
         }
@@ -145,6 +250,7 @@ class AlarmPlaceSelectionTest {
             onView(withId(R.id.search))
                 .perform(replaceText("United States"), closeSoftKeyboard())
         }
+        waitForPickerResults()
         eventually {
             onView(withId(R.id.recycler)).perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
@@ -158,6 +264,7 @@ class AlarmPlaceSelectionTest {
                 .check(matches(withText(containsString("United States"))))
         }
         onView(withId(R.id.search)).perform(replaceText("Los Angeles"), closeSoftKeyboard())
+        waitForPickerResults()
         eventually {
             onView(withId(R.id.recycler)).perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
@@ -178,6 +285,14 @@ class AlarmPlaceSelectionTest {
         return data
     }
 
+    private fun waitForPickerResults() {
+        eventually {
+            onView(withId(R.id.progress))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)))
+            onView(withId(R.id.recycler)).check(matches(isEnabled()))
+        }
+    }
+
     private fun eventually(assertion: () -> Unit) {
         var lastFailure: Throwable? = null
         repeat(100) {
@@ -190,5 +305,14 @@ class AlarmPlaceSelectionTest {
             }
         }
         throw lastFailure ?: AssertionError("Condition was not met")
+    }
+
+    private fun <T : Any> eventuallyValue(block: () -> T?): T {
+        var value: T? = null
+        eventually {
+            value = block()
+            assertNotNull(value)
+        }
+        return requireNotNull(value)
     }
 }

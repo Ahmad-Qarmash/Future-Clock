@@ -6,9 +6,10 @@ A free, ad-supported universal Android clock app with a bold cyberpunk neon desi
 
 - **Live clock tab** — large neon digits, ticking seconds, date, day, battery, and timezone
 - **World clock** — search 235,000+ offline cities, towns, and villages by place, alias, country, or timezone
-- **Alarms** — anchor an alarm to any catalog place so its local wall time survives travel and daylight-saving changes
+- **Alarms** — anchor an alarm to any catalog place, with saved World Clock locations suggested first; its local wall time survives travel and daylight-saving changes
 - **Timer** — circular neon progress, presets (1/3/5/10/30 min), foreground service, system notification with pause/reset
-- **Stopwatch** — sub-second precision, lap history, share via system intent
+- **Focused navigation** — Clock, World, Alarms, Timer, and More stay within Android’s five-destination guidance
+- **Stopwatch** — sub-second precision, lap history, and sharing, available from More
 - **Settings** — 12/24 h, show seconds, snooze length, and System/Light/Dark appearance
 - **Four home-screen widgets** — analog, digital, world clock, and next-alarm
 

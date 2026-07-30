@@ -24,7 +24,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migration2To3PreservesAlarmsAndWorldCities() {
+    fun migration2To4PreservesAlarmsAndWorldCities() {
         context.deleteDatabase(databaseName)
         SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath(databaseName), null).use { db ->
             db.execSQL(
@@ -80,6 +80,8 @@ class AppDatabaseMigrationTest {
             val cities = room.worldCityDao().getAll()
             assertEquals("Preserved", alarm?.label)
             assertEquals("Asia/Jerusalem", alarm?.timeZoneId)
+            assertEquals("", alarm?.placeName)
+            assertEquals(0L, alarm?.placeId)
             assertEquals(1, cities.size)
             assertEquals("America/New_York", cities.single().tzId)
             assertTrue(cities.single().locationId < 0)
@@ -88,7 +90,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migration1To3AddsTimezoneAndPreservesAllUserData() {
+    fun migration1To4AddsTimezoneAndPlaceColumnsAndPreservesAllUserData() {
         context.deleteDatabase(databaseName)
         SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath(databaseName), null).use { db ->
             db.execSQL(
@@ -143,6 +145,8 @@ class AppDatabaseMigrationTest {
             val city = room.worldCityDao().getAll().single()
             assertEquals("California", alarm?.label)
             assertEquals("", alarm?.timeZoneId)
+            assertEquals("", alarm?.placeName)
+            assertEquals("", alarm?.placeCountry)
             assertEquals("America/Los_Angeles", city.tzId)
             assertTrue(city.locationId < 0)
         }
@@ -150,7 +154,7 @@ class AppDatabaseMigrationTest {
             "SELECT identity_hash FROM room_master_table WHERE id = 42"
         ).use { cursor ->
             assertTrue(cursor.moveToFirst())
-            assertEquals("b240940c7255397951d7351342c9ab5c", cursor.getString(0))
+            assertEquals("8ab8524ca2e191e1fc3edafc22f17ebf", cursor.getString(0))
         }
         room.close()
     }

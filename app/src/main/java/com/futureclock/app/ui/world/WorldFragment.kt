@@ -59,6 +59,9 @@ class WorldFragment : Fragment() {
         binding.fabAdd.setOnClickListener {
             startActivity(Intent(requireContext(), WorldPickerActivity::class.java))
         }
+        binding.btnSettings.setOnClickListener {
+            (activity as? com.futureclock.app.MainActivity)?.openSettings()
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             val dao = (requireContext().applicationContext as FutureClockApp).database.worldCityDao()

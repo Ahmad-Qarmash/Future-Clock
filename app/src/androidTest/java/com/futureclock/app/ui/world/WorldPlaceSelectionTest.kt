@@ -10,8 +10,12 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.isEnabled
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -44,8 +48,9 @@ class WorldPlaceSelectionTest {
             Intent(context, WorldPickerActivity::class.java)
         )
 
+        onView(withId(R.id.search)).perform(replaceText("Israel"), closeSoftKeyboard())
+        waitForPickerResults()
         eventually {
-            onView(withId(R.id.search)).perform(replaceText("Israel"), closeSoftKeyboard())
             onView(withId(R.id.recycler)).perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
                     hasDescendant(withText("Israel")),
@@ -54,6 +59,7 @@ class WorldPlaceSelectionTest {
             )
         }
         onView(withId(R.id.search)).perform(replaceText("Nazareth"), closeSoftKeyboard())
+        waitForPickerResults()
         eventually {
             onView(withId(R.id.recycler)).perform(
                 RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
@@ -72,6 +78,14 @@ class WorldPlaceSelectionTest {
         assertEquals("Asia/Jerusalem", cities.single().tzId)
         assertTrue(cities.single().locationId > 0)
         scenario.close()
+    }
+
+    private fun waitForPickerResults() {
+        eventually {
+            onView(withId(R.id.progress))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)))
+            onView(withId(R.id.recycler)).check(matches(isEnabled()))
+        }
     }
 
     private fun eventually(assertion: () -> Unit) {

@@ -18,6 +18,7 @@ class CityCatalogInstallationTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val databaseFile get() = File(context.noBackupFilesDir, "places-v1.sqlite")
+    private val temporaryFile get() = File(context.noBackupFilesDir, "places-v1.sqlite.tmp")
 
     @After
     fun closeCatalog() {
@@ -35,6 +36,7 @@ class CityCatalogInstallationTest {
 
         assertTrue(CityCatalog.get(context).placeCount() >= 200_000)
         assertTrue(databaseFile.length() > 1_000_000)
+        assertFalse("Temporary catalog must be removed after installation", temporaryFile.exists())
         SQLiteDatabase.openDatabase(
             databaseFile.absolutePath,
             null,

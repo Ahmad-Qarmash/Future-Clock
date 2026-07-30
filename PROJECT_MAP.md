@@ -11,11 +11,12 @@ FutureClockApp (Application)
   └── schedules the next widget tick
   ↓
 MainActivity
-  ├── hosts a fragment container + bottom nav
+  ├── hosts a fragment container + five-destination bottom nav
   ├── owns a shared banner ad slot above the bottom nav
   └── routes widget deep-link intents to the right tab
   ↓
-Fragments (Clock, World, Alarm, Timer, Stopwatch, Settings)
+Primary fragments (Clock, World, Alarm, Timer, More)
+Secondary fragments (Stopwatch, Settings)
   ↓ observe Flow
 Room DAO (alarms, world cities)   +   DataStore (settings)
 Versioned SQLite place catalog (read-only, separate from user data)
@@ -40,6 +41,7 @@ Foreground services
 | `ui/alarm`                                      | Alarm list, edit screen with time picker, day chips, snooze slider   |
 | `ui/timer`                                      | Countdown timer with circular neon progress and presets              |
 | `ui/stopwatch`                                  | Stopwatch with laps and share                                        |
+| `ui/more`                                       | Secondary tools, preferences, widget help, and app information       |
 | `ui/settings`                                   | User preferences screen                                              |
 | `ui/views`                                      | Custom `AnalogClockView` and `CircularTimerView` (Canvas-drawn)      |
 | `data/db`                                       | Room entities (`AlarmEntity`, `WorldCityEntity`), DAOs, database     |
@@ -61,7 +63,7 @@ Foreground services
 
 | Table           | Purpose                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------- |
-| `alarms`        | hour, minute, label, repeat mask, IANA timezone, enabled, feedback, next trigger          |
+| `alarms`        | schedule, IANA timezone, independent place snapshot, feedback, and next trigger           |
 | `world_cities`  | stable catalog location ID, IANA timezone, display name, country, flag, sort order        |
 
 Alarms are sorted by `next_trigger_ms` (computed by `AlarmMath.nextTrigger`) so the
@@ -71,6 +73,10 @@ duplicating work.
 ## Alarm scheduling flow
 
 1. User creates or edits an alarm in `AlarmEditActivity`.
+   - The place picker promotes valid, de-duplicated `world_cities` rows with their
+     current local time, UTC offset, and day delta before the full offline catalog.
+   - The selected place ID, name, country, flag, and IANA timezone are copied into
+     the alarm. Removing that place from World Clock therefore cannot change the alarm.
 2. The activity calls `AlarmScheduler.schedule(context, alarm)` which:
    - Computes the next absolute trigger time using `AlarmMath.nextTrigger`.
    - Uses `AlarmManager.setAlarmClock` on API 23+ when exact alarms are permitted

@@ -14,11 +14,30 @@
         android:paddingTop="@dimen/space_xl"
         android:paddingBottom="@dimen/space_xxxl">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/tab_settings"
-            android:textAppearance="@style/TextAppearance.FutureClock.ScreenTitle" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_back"
+                style="@style/Widget.FutureClock.IconButton"
+                android:layout_width="@dimen/touch_target"
+                android:layout_height="@dimen/touch_target"
+                android:layout_marginEnd="@dimen/space_s"
+                android:contentDescription="@string/cd_navigate_back"
+                app:icon="@drawable/ic_arrow_back"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tab_settings"
+                android:textAppearance="@style/TextAppearance.FutureClock.ScreenTitle" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"

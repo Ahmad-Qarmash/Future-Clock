@@ -87,4 +87,17 @@
         android:contentDescription="@string/action_add_city"
         android:text="@string/action_add_city"
         app:icon="@drawable/ic_add" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_settings"
+        style="@style/Widget.FutureClock.IconButton"
+        android:layout_width="@dimen/touch_target"
+        android:layout_height="@dimen/touch_target"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="@dimen/space_xl"
+        android:layout_marginEnd="@dimen/page_padding"
+        android:contentDescription="@string/settings_shortcut_description"
+        app:icon="@drawable/ic_settings"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
