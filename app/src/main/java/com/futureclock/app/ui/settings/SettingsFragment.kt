@@ -9,7 +9,9 @@ import androidx.lifecycle.lifecycleScope
 import com.futureclock.app.BuildConfig
 import com.futureclock.app.FutureClockApp
 import com.futureclock.app.R
+import com.futureclock.app.ads.ConsentManager
 import com.futureclock.app.databinding.FragmentSettingsBinding
+import com.futureclock.app.ui.common.UiFeedback
 import com.futureclock.app.ui.theme.ThemeController
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -31,6 +33,13 @@ class SettingsFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         binding.textVersion.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
+        binding.btnPrivacyOptions.setOnClickListener {
+            ConsentManager.showPrivacyOptions(requireActivity()) { available ->
+                if (!available && _binding != null) {
+                    UiFeedback.show(binding.root, R.string.settings_privacy_unavailable)
+                }
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             val settings = app.settings

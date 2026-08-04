@@ -33,10 +33,10 @@
         android:theme="@style/Theme.FutureClock"
         tools:targetApi="34">
 
-        <!-- AdMob App ID placeholder (replace in strings.xml) -->
+        <!-- Variant-specific ID: test for debug and your AdMob ID for signed release builds. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="@string/admob_app_id" />
+            android:value="${admobAppId}" />
 
         <activity
             android:name=".MainActivity"

@@ -44,9 +44,24 @@
     <string name="action_deleting">Deleting…</string>
 
     <!-- ================= Clock screen ================= -->
-    <string name="clock_battery_format">Battery %1$d%%</string>
-    <string name="clock_battery_label">Battery</string>
-    <string name="clock_timezone_label">Local timezone</string>
+    <string name="clock_format_label">Time format</string>
+    <string name="clock_format_12" translatable="false">12H</string>
+    <string name="clock_format_24" translatable="false">24H</string>
+    <string name="clock_timezone_label">Time zone</string>
+    <string name="clock_calendar_label">Calendar</string>
+    <string name="clock_calendar_format">Week %1$d · Day %2$d</string>
+    <string name="clock_next_alarm_label">Next alarm</string>
+    <string name="clock_no_alarm">No alarm scheduled</string>
+    <string name="clock_next_alarm_format">%1$s · %2$s</string>
+    <string name="clock_custom_time">Customize time zone</string>
+    <string name="clock_custom_time_title">Clock time zone</string>
+    <string name="clock_custom_time_description">Create a fixed UTC offset for this clock. This changes Future Clock only, not your phone’s system time.</string>
+    <string name="clock_use_custom_zone">Use custom time zone</string>
+    <string name="clock_custom_zone_name">Time zone name</string>
+    <string name="clock_custom_zone_name_hint">My time</string>
+    <string name="clock_utc_offset">UTC offset</string>
+    <string name="clock_use_device_time">Using device time zone</string>
+    <string name="clock_custom_zone_active">Custom fixed-offset time zone</string>
     <string name="clock_sun_format">Sunrise %1$s · Sunset %2$s</string>
     <string name="clock_no_sun">—</string>
 
@@ -228,9 +243,12 @@
 
     <!-- ================= Ads ================= -->
     <string name="ad_banner_placeholder">Ad</string>
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
     <string name="ad_remove">Remove ads</string>
     <string name="ad_remove_subtitle">Coming soon</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_privacy_choices">Privacy choices</string>
+    <string name="settings_privacy_choices_description">Manage your advertising privacy choices.</string>
+    <string name="settings_privacy_unavailable">Privacy choices are not available right now.</string>
 
     <!-- ================= Misc ================= -->
     <string name="loading">Loading…</string>

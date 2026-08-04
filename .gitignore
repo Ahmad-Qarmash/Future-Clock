@@ -1,24 +1,31 @@
+# Android Studio / Gradle local state
 *.iml
-.gradle
+/.gradle/
 /.kotlin/
 /local.properties
 /.idea/
+# Keep .run/ tracked: it contains the shared Android `app` run configuration.
 .DS_Store
-/build
+/build/
 /captures
 .externalNativeBuild
 .cxx
-local.properties
-/app/build
-/app/release
+/app/build/
+/app/release/
 *.apk
 *.aab
+*.idsig
+
+# Release signing and monetisation credentials
 *.keystore
 *.jks
 *.p12
 *.pem
-google-services.json
 keystore.properties
+release.properties
+signing.properties
+credentials.properties
+google-services.json
 .env
 .env.*
 !.env.example
