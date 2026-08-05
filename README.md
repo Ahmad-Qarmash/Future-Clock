@@ -44,8 +44,8 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 | Command                       | Purpose                                              |
 | ----------------------------- | ---------------------------------------------------- |
-| `./gradlew assembleDebug`     | Build a debug APK with test AdMob IDs                |
-| `./gradlew assembleRelease`   | Build a release AAB (requires your signing key)      |
+| `./gradlew assembleDebug`     | Build a debug APK with safe Google test ads           |
+| `./gradlew bundleRelease`     | Build a signed production AAB (requires local release configuration) |
 | `./gradlew installDebug`      | Install the debug APK on a connected device          |
 | `./gradlew lint`              | Run Android Lint                                     |
 | `./gradlew clean`             | Wipe build outputs                                   |

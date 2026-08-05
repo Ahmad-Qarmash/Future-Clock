@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.futureclock.app.R
 import com.futureclock.app.ads.AdManager
+import com.futureclock.app.ads.ConsentManager
 import com.futureclock.app.databinding.ActivityMainBinding
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.ui.alarm.AlarmFragment
@@ -43,7 +44,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupNav(savedInstanceState)
-        setupBannerAd()
+        ConsentManager.gatherConsent(this) {
+            AdManager.initialize(applicationContext)
+            setupBannerAd()
+        }
         requestPermissionsIfNeeded()
         handleDeepLink(intent)
     }
@@ -61,7 +65,6 @@ class MainActivity : AppCompatActivity() {
     private fun setupNav(savedInstanceState: Bundle?) {
         binding.bottomNav.setOnItemSelectedListener { item ->
             selectTab(item.itemId)
-            AdManager.maybeShowInterstitial(this, AdManager.Trigger.TAB_CHANGE)
             true
         }
         val defaultTab = intent.getIntExtra(EXTRA_DEFAULT_TAB, R.id.nav_clock)
@@ -165,6 +168,21 @@ class MainActivity : AppCompatActivity() {
         if (action == Actions.ACTION_OPEN_STOPWATCH_TAB) {
             binding.bottomNav.post { openStopwatchFromMore() }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        AdManager.resumeBanner()
+    }
+
+    override fun onPause() {
+        AdManager.pauseBanner()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        AdManager.destroyBanner()
+        super.onDestroy()
     }
 
     companion object {

@@ -64,11 +64,16 @@ class WorldFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val dao = (requireContext().applicationContext as FutureClockApp).database.worldCityDao()
+            val app = requireContext().applicationContext as FutureClockApp
+            val dao = app.database.worldCityDao()
             dao.observeAll().collect { cities ->
                 adapter.submit(cities)
                 binding.emptyState.visibility = if (cities.isEmpty()) View.VISIBLE else View.GONE
             }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val app = requireContext().applicationContext as FutureClockApp
+            app.settings.use24h.collect { adapter.use24h = it }
         }
     }
 

@@ -14,7 +14,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
-import com.futureclock.app.ads.AdManager
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.notification.Extras
 import com.futureclock.app.notification.NotificationChannels

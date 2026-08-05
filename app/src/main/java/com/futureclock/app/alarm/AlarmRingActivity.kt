@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.futureclock.app.FutureClockApp
 import com.futureclock.app.R
-import com.futureclock.app.ads.AdManager
 import com.futureclock.app.databinding.ActivityAlarmRingBinding
 import com.futureclock.app.util.TimeFormat
 import com.futureclock.app.util.AlarmMath
@@ -219,7 +218,6 @@ class AlarmRingActivity : AppCompatActivity() {
                 return
             }
         }
-        AdManager.maybeShowInterstitial(this, AdManager.Trigger.ALARM_DISMISS)
         finishAndRemoveTask()
     }
 }

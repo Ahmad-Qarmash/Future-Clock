@@ -110,6 +110,56 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/settings_privacy"
+            android:textAppearance="@style/TextAppearance.FutureClock.Section" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FutureClock.Card.Flat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/space_l">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_privacy_choices"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_subtitle" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/settings_privacy_choices_description"
+                        android:textAppearance="@style/TextAppearance.FutureClock.Body" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_privacy_options"
+                    style="@style/Widget.FutureClock.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_manage" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
             android:text="@string/settings_time_section"
             android:textAppearance="@style/TextAppearance.FutureClock.Section" />
 
@@ -213,6 +263,7 @@
                         android:textColor="@color/brand_primary"
                         android:textSize="@dimen/text_body"
                         android:textStyle="bold"
+                        android:text="@string/settings_snooze_default"
                         tools:text="5 min" />
                 </LinearLayout>
 

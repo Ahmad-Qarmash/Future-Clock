@@ -8,6 +8,7 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
+import com.futureclock.app.FutureClockApp
 import com.futureclock.app.data.tz.City
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.util.TimeFormat
@@ -15,11 +16,15 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.TimeZone
 import kotlin.math.absoluteValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class WorldClockWidget : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
-        ids.forEach { id -> updateOne(context, mgr, id) }
+        updateAll(context, mgr, ids)
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -28,7 +33,7 @@ class WorldClockWidget : AppWidgetProvider() {
         id: Int,
         newOptions: android.os.Bundle
     ) {
-        updateOne(context, mgr, id)
+        updateAll(context, mgr, intArrayOf(id))
     }
 
     override fun onEnabled(context: Context) {
@@ -40,7 +45,19 @@ class WorldClockWidget : AppWidgetProvider() {
         ids.forEach { id -> prefs.edit().remove("widget_$id").apply() }
     }
 
-    private fun updateOne(context: Context, mgr: AppWidgetManager, id: Int) {
+    private fun updateAll(context: Context, mgr: AppWidgetManager, ids: IntArray) {
+        val pendingResult = goAsync()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val use24h = (context.applicationContext as FutureClockApp).settings.use24h.first()
+                ids.forEach { id -> updateOne(context, mgr, id, use24h) }
+            } finally {
+                pendingResult.finish()
+            }
+        }
+    }
+
+    private fun updateOne(context: Context, mgr: AppWidgetManager, id: Int, use24h: Boolean) {
         val opts = mgr.getAppWidgetOptions(id)
         val maxH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 110)
         val countCities = if (maxH >= 180) 3 else if (maxH >= 100) 2 else 1
@@ -60,7 +77,7 @@ class WorldClockWidget : AppWidgetProvider() {
                 val time = if (city.tzId in validTimeZones) {
                     TimeFormat.formatTime(
                         TimeZone.getTimeZone(city.tzId),
-                        use24h = true,
+                        use24h = use24h,
                         showSeconds = false
                     )
                 } else {

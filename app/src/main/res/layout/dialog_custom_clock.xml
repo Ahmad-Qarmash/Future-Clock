@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/space_l"
+    android:paddingTop="@dimen/space_s"
+    android:paddingEnd="@dimen/space_l"
+    android:paddingBottom="@dimen/space_s">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/clock_custom_time_description"
+        android:textAppearance="@style/TextAppearance.FutureClock.Body" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_custom_zone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_m"
+        android:minHeight="56dp"
+        android:text="@string/clock_use_custom_zone" />
+
+    <LinearLayout
+        android:id="@+id/custom_zone_fields"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.FutureClock.TextInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:hint="@string/clock_custom_zone_name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_zone_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences"
+                android:maxLength="30"
+                tools:text="Studio time" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_l"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/clock_utc_offset"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_subtitle" />
+
+            <TextView
+                android:id="@+id/text_offset_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_status_info"
+                android:textColor="@color/brand_primary"
+                android:textStyle="bold"
+                tools:text="UTC+03:00" />
+        </LinearLayout>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/slider_utc_offset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_s"
+            android:stepSize="15"
+            android:valueFrom="-720"
+            android:valueTo="840"
+            app:labelBehavior="gone" />
+    </LinearLayout>
+</LinearLayout>

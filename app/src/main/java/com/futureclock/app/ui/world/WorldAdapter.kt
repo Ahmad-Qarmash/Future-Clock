@@ -17,6 +17,12 @@ class WorldAdapter(
 ) : RecyclerView.Adapter<WorldAdapter.VH>() {
 
     private val items = mutableListOf<WorldCityEntity>()
+    var use24h: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyDataSetChanged()
+        }
 
     fun submit(newItems: List<WorldCityEntity>) {
         items.clear()
@@ -48,7 +54,7 @@ class WorldAdapter(
         holder.binding.cityFlag.text = city.flag
         holder.binding.cityName.text = city.displayName
         holder.binding.cityCountry.text = city.country
-        holder.binding.cityTime.text = TimeFormat.formatTime(use24h = true, hour = h, minute = m)
+        holder.binding.cityTime.text = TimeFormat.formatTime(use24h = use24h, hour = h, minute = m)
         val deltaDays = TimeFormat.dayDelta(zone)
         holder.binding.cityDayDiff.text = when {
             deltaDays > 0 -> holder.itemView.context.getString(R.string.world_day, deltaDays)

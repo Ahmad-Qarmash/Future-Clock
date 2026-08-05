@@ -17,6 +17,7 @@ import com.futureclock.app.util.TimeFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 
 class NextAlarmWidget : AppWidgetProvider() {
 
@@ -26,10 +27,11 @@ class NextAlarmWidget : AppWidgetProvider() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val alarmResult = runCatching { app.database.alarmDao().getNextEnabled() }
+                val use24h = app.settings.use24h.first()
                 ids.forEach { id ->
                     val views = RemoteViews(context.packageName, R.layout.widget_next_alarm)
                     views.setOnClickPendingIntent(R.id.widget_root, openAlarm(context))
-                    alarmResult.onSuccess { renderAlarm(views, it, context) }
+                    alarmResult.onSuccess { renderAlarm(views, it, context, use24h) }
                         .onFailure {
                             views.setTextViewText(
                                 R.id.widget_time,
@@ -52,14 +54,14 @@ class NextAlarmWidget : AppWidgetProvider() {
         WidgetUpdateScheduler.scheduleNext(context)
     }
 
-    private fun renderAlarm(views: RemoteViews, alarm: AlarmEntity?, context: Context) {
+    private fun renderAlarm(views: RemoteViews, alarm: AlarmEntity?, context: Context, use24h: Boolean) {
         if (alarm == null) {
             views.setTextViewText(R.id.widget_time, context.getString(R.string.widget_no_alarm))
             views.setTextViewText(R.id.widget_subtitle, " ")
             return
         }
         val zone = AlarmMath.timeZone(alarm.timeZoneId)
-        val time = TimeFormat.formatTime(zone, use24h = true, hour = alarm.hour, minute = alarm.minute)
+        val time = TimeFormat.formatTime(zone, use24h = use24h, hour = alarm.hour, minute = alarm.minute)
         views.setTextViewText(R.id.widget_time, time)
         val nextMs = AlarmMath.nextTrigger(
             System.currentTimeMillis(), alarm.hour, alarm.minute,
