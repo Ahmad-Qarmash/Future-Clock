@@ -5,22 +5,34 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import android.widget.RemoteViews
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
+import com.futureclock.app.data.db.WorldCityEntity
+import com.futureclock.app.data.tz.City
 import com.futureclock.app.data.tz.CityCatalog
 import com.futureclock.app.notification.Actions
+import com.futureclock.app.util.AlarmMath
 import com.futureclock.app.util.TimeFormat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.TimeZone
 
 class WorldClockWidget : AppWidgetProvider() {
 
-    override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
-        ids.forEach { id -> updateOne(context, mgr, id) }
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
+        updateWidgets(context, manager, ids)
     }
 
-    override fun onAppWidgetOptionsChanged(context: Context, mgr: AppWidgetManager, id: Int, newOptions: android.os.Bundle) {
-        updateOne(context, mgr, id)
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        manager: AppWidgetManager,
+        id: Int,
+        newOptions: android.os.Bundle
+    ) {
+        updateWidgets(context, manager, intArrayOf(id))
     }
 
     override fun onEnabled(context: Context) {
@@ -28,60 +40,193 @@ class WorldClockWidget : AppWidgetProvider() {
     }
 
     override fun onDeleted(context: Context, ids: IntArray) {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        ids.forEach { id -> prefs.edit().remove("widget_$id").apply() }
+        val editor = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        ids.forEach { id -> editor.remove("widget_$id") }
+        editor.apply()
     }
 
-    private fun updateOne(context: Context, mgr: AppWidgetManager, id: Int) {
-        val opts = mgr.getAppWidgetOptions(id)
-        val maxH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 110)
-        val countCities = if (maxH >= 180) 3 else if (maxH >= 100) 2 else 1
-        val layout = if (countCities >= 3) R.layout.widget_world_large else R.layout.widget_world_medium
-        val views = RemoteViews(context.packageName, layout)
-
-        val selected = loadCities(context, id).take(countCities)
-        for (i in 0 until countCities) {
-            val (cityView, timeView) = when (i) {
-                0 -> R.id.widget_city_1 to R.id.widget_time_1
-                1 -> R.id.widget_city_2 to R.id.widget_time_2
-                else -> R.id.widget_city_3 to R.id.widget_time_3
-            }
-            if (i < selected.size) {
-                val city = selected[i]
-                val zone = TimeZone.getTimeZone(city.tzId)
-                views.setTextViewText(cityView, "${city.flag} ${city.name}")
-                views.setTextViewText(timeView, TimeFormat.formatTime(zone, use24h = true, showSeconds = false))
-            } else {
-                views.setTextViewText(cityView, "")
-                views.setTextViewText(timeView, "-")
+    private fun updateWidgets(context: Context, manager: AppWidgetManager, ids: IntArray) {
+        if (ids.isEmpty()) return
+        val pendingResult = goAsync()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val snapshot = WidgetDataSource.load(context)
+                ids.forEach { id -> renderWidget(context, manager, id, snapshot) }
+            } finally {
+                pendingResult.finish()
             }
         }
-
-        views.setOnClickPendingIntent(R.id.widget_root, openApp(context))
-        mgr.updateAppWidget(id, views)
     }
 
-    private fun loadCities(context: Context, id: Int): List<com.futureclock.app.data.tz.City> {
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val raw = prefs.getString("widget_$id", null) ?: return defaultCities()
-        return raw.split(SEPARATOR)
+    private fun renderWidget(
+        context: Context,
+        manager: AppWidgetManager,
+        id: Int,
+        snapshot: WidgetSnapshot
+    ) {
+        val options = manager.getAppWidgetOptions(id)
+        val maxWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 250)
+        val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 250)
+        val layout = when {
+            maxWidth >= 180 && maxHeight >= 180 -> R.layout.widget_world_large
+            maxHeight >= 135 -> R.layout.widget_world_medium
+            else -> R.layout.widget_world_small
+        }
+        val visibleCityCount = when (layout) {
+            R.layout.widget_world_large -> 3
+            R.layout.widget_world_medium -> 2
+            else -> 1
+        }
+        val views = RemoteViews(context.packageName, layout)
+        val cities = snapshot.cities.ifEmpty { legacyOrDefaultCities(context, id) }
+
+        views.setTextViewText(
+            R.id.widget_city_count,
+            context.resources.getQuantityString(
+                R.plurals.widget_city_count,
+                cities.size,
+                cities.size
+            )
+        )
+
+        val rowIds = intArrayOf(R.id.widget_row_1, R.id.widget_row_2, R.id.widget_row_3)
+        for (index in 0 until visibleCityCount) {
+            val city = cities.getOrNull(index)
+            views.setViewVisibility(rowIds[index], if (city == null) View.GONE else View.VISIBLE)
+            if (city != null) renderCity(context, views, index, city, snapshot.use24h)
+        }
+        renderNextAlarm(context, views, snapshot.nextAlarm, snapshot.use24h)
+
+        views.setOnClickPendingIntent(R.id.widget_root, openWorld(context))
+        views.setOnClickPendingIntent(R.id.widget_alarm_root, openAlarms(context))
+        manager.updateAppWidget(id, views)
+    }
+
+    private fun renderCity(
+        context: Context,
+        views: RemoteViews,
+        index: Int,
+        city: WorldCityEntity,
+        use24h: Boolean
+    ) {
+        val cityIds = intArrayOf(R.id.widget_city_1, R.id.widget_city_2, R.id.widget_city_3)
+        val metaIds = intArrayOf(R.id.widget_meta_1, R.id.widget_meta_2, R.id.widget_meta_3)
+        val timeIds = intArrayOf(R.id.widget_time_1, R.id.widget_time_2, R.id.widget_time_3)
+        val zone = safeTimeZone(city.tzId)
+        val cityLabel = listOf(city.flag, city.displayName)
+            .filter { it.isNotBlank() }
+            .joinToString(" ")
+        val meta = listOf(city.country, dayRelation(context, zone))
+            .filter { it.isNotBlank() }
+            .joinToString(" \u00B7 ")
+
+        views.setTextViewText(cityIds[index], cityLabel)
+        views.setTextViewText(metaIds[index], meta)
+        configureTextClock(views, timeIds[index], city.tzId, use24h)
+    }
+
+    private fun renderNextAlarm(
+        context: Context,
+        views: RemoteViews,
+        next: WidgetAlarm?,
+        use24h: Boolean
+    ) {
+        if (next == null) {
+            views.setTextViewText(R.id.widget_alarm_time, context.getString(R.string.widget_no_alarm_short))
+            views.setTextViewText(R.id.widget_alarm_subtitle, context.getString(R.string.widget_create_alarm))
+            return
+        }
+
+        val alarm = next.alarm
+        val zone = AlarmMath.timeZone(alarm.timeZoneId)
+        val time = TimeFormat.formatTime(zone, use24h, alarm.hour, alarm.minute)
+        val countdown = WidgetDataSource.formatCountdown(
+            context,
+            next.triggerAtMillis,
+            System.currentTimeMillis()
+        )
+        val zoneName = CityCatalog.ALL.firstOrNull { it.tzId == alarm.timeZoneId }?.name
+            ?: alarm.timeZoneId.substringAfterLast('/').replace('_', ' ').ifBlank { zone.id }
+        val subtitle = listOf(alarm.label, zoneName, countdown)
+            .filter { it.isNotBlank() }
+            .joinToString(" \u00B7 ")
+        views.setTextViewText(R.id.widget_alarm_time, time)
+        views.setTextViewText(R.id.widget_alarm_subtitle, subtitle)
+    }
+
+    private fun legacyOrDefaultCities(context: Context, id: Int): List<WorldCityEntity> {
+        val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString("widget_$id", null)
+        val legacy = raw.orEmpty().split(SEPARATOR)
             .filter { it.isNotBlank() }
             .mapNotNull { tzId -> CityCatalog.ALL.find { it.tzId == tzId } }
-            .ifEmpty { defaultCities() }
+        return (legacy.ifEmpty { defaultCities() }).mapIndexed { index, city ->
+            city.toEntity(index)
+        }
     }
 
-    private fun defaultCities(): List<com.futureclock.app.data.tz.City> {
-        val defaults = listOf("America/New_York", "Europe/London", "Asia/Tokyo")
-        return defaults.mapNotNull { tzId -> CityCatalog.ALL.find { it.tzId == tzId } }
+    private fun defaultCities(): List<City> =
+        listOf("America/New_York", "Europe/London", "Asia/Tokyo")
+            .mapNotNull { tzId -> CityCatalog.ALL.find { it.tzId == tzId } }
+
+    private fun City.toEntity(order: Int) = WorldCityEntity(
+        tzId = tzId,
+        displayName = name,
+        country = country,
+        flag = flag,
+        sortOrder = order
+    )
+
+    private fun dayRelation(context: Context, zone: TimeZone): String =
+        when (val delta = TimeFormat.dayDelta(zone)) {
+            0 -> context.getString(R.string.world_today)
+            1 -> context.getString(R.string.widget_tomorrow)
+            -1 -> context.getString(R.string.widget_yesterday)
+            in 2..Int.MAX_VALUE -> context.resources.getQuantityString(
+                R.plurals.widget_days_ahead,
+                delta,
+                delta
+            )
+            else -> context.resources.getQuantityString(
+                R.plurals.widget_days_behind,
+                -delta,
+                -delta
+            )
+        }
+
+    private fun safeTimeZone(tzId: String): TimeZone =
+        if (TimeZone.getAvailableIDs().contains(tzId)) TimeZone.getTimeZone(tzId)
+        else TimeZone.getDefault()
+
+    private fun configureTextClock(views: RemoteViews, viewId: Int, tzId: String, use24h: Boolean) {
+        val pattern = if (use24h) "HH:mm" else "h:mm a"
+        views.setString(viewId, "setTimeZone", tzId)
+        views.setCharSequence(viewId, "setFormat12Hour", pattern)
+        views.setCharSequence(viewId, "setFormat24Hour", pattern)
     }
 
-    private fun openApp(context: Context): PendingIntent {
+    private fun openWorld(context: Context): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
             action = Actions.ACTION_OPEN_WORLD_TAB
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         return PendingIntent.getActivity(
-            context, 0, intent,
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun openAlarms(context: Context): PendingIntent {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            action = Actions.ACTION_OPEN_ALARM_TAB
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        return PendingIntent.getActivity(
+            context,
+            1,
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }

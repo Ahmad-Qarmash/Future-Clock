@@ -12,9 +12,9 @@
         android:id="@+id/widget_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/widget_next_alarm_label"
+        android:text="@string/widget_next_alarm_short"
         android:textColor="@color/widget_accent"
-        android:textSize="@dimen/widget_text_small"
+        android:textSize="12sp"
         android:textStyle="bold"
         android:letterSpacing="0.1" />
 
@@ -24,15 +24,19 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-light"
         android:textColor="@color/widget_text"
-        android:textSize="32sp"
+        android:textSize="34sp"
         android:includeFontPadding="false"
         android:paddingTop="2dp"
+        android:text="@string/widget_no_alarm"
         tools:text="07:30" />
 
     <TextView
         android:id="@+id/widget_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/widget_loading"
         android:textColor="@color/widget_text_muted"
         android:textSize="@dimen/widget_text_small"
         tools:text="in 8h 24m" />

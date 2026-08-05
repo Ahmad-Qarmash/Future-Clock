@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="9dp">
+
+    <LinearLayout
+        android:id="@+id/widget_row_1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_city_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/widget_loading"
+                android:textColor="@color/widget_text"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="🇺🇸 New York" />
+
+            <TextView
+                android:id="@+id/widget_meta_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_text_muted"
+                android:textSize="11sp"
+                tools:text="United States · Today" />
+        </LinearLayout>
+
+        <TextClock
+            android:id="@+id/widget_time_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="h:mm a"
+            android:format24Hour="HH:mm"
+            android:includeFontPadding="false"
+            android:textColor="@color/widget_text"
+            android:textSize="19sp"
+            tools:text="12:34" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_alarm_root"
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:background="@drawable/widget_alarm_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="7dp">
+
+        <TextView
+            android:id="@+id/widget_alarm_subtitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/widget_loading"
+            android:textColor="@color/widget_text_muted"
+            android:textSize="11sp"
+            tools:text="Next alarm · in 8h 24m" />
+
+        <TextView
+            android:id="@+id/widget_alarm_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:text="@string/widget_no_alarm_short"
+            android:textColor="@color/widget_accent"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="07:30" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_city_count"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        tools:text="3 cities" />
+
+</LinearLayout>

@@ -29,6 +29,8 @@ class BootReceiver : BroadcastReceiver() {
                     AlarmScheduler.schedule(context, alarm)
                 }
             } finally {
+                com.futureclock.app.widget.WidgetUpdateScheduler.refreshAll(context)
+                com.futureclock.app.widget.WidgetUpdateScheduler.scheduleNext(context)
                 pendingResult.finish()
             }
         }

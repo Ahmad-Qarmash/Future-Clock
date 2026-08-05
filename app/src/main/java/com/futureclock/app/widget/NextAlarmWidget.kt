@@ -6,64 +6,69 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import com.futureclock.app.FutureClockApp
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
-import com.futureclock.app.data.db.AlarmEntity
+import com.futureclock.app.data.tz.CityCatalog
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.util.AlarmMath
-import com.futureclock.app.util.CountdownLongFormat
 import com.futureclock.app.util.TimeFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class NextAlarmWidget : AppWidgetProvider() {
 
-    override fun onUpdate(context: Context, mgr: AppWidgetManager, ids: IntArray) {
-        ids.forEach { id -> updateOne(context, mgr, id) }
-    }
-
-    override fun onEnabled(context: Context) { WidgetUpdateScheduler.scheduleNext(context) }
-
-    private fun updateOne(context: Context, mgr: AppWidgetManager, id: Int) {
-        val views = RemoteViews(context.packageName, R.layout.widget_next_alarm)
-        val app = context.applicationContext as FutureClockApp
-
-        views.setOnClickPendingIntent(R.id.widget_root, openAlarm(context))
-
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
+        if (ids.isEmpty()) return
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val next = app.database.alarmDao().getNextEnabled()
-                renderAlarm(views, next, context)
-                mgr.updateAppWidget(id, views)
+                val snapshot = WidgetDataSource.load(context)
+                ids.forEach { id -> render(context, manager, id, snapshot) }
             } finally {
                 pendingResult.finish()
             }
         }
     }
 
-    private fun renderAlarm(views: RemoteViews, alarm: AlarmEntity?, context: Context) {
-        if (alarm == null) {
+    override fun onEnabled(context: Context) {
+        WidgetUpdateScheduler.scheduleNext(context)
+    }
+
+    private fun render(
+        context: Context,
+        manager: AppWidgetManager,
+        id: Int,
+        snapshot: WidgetSnapshot
+    ) {
+        val views = RemoteViews(context.packageName, R.layout.widget_next_alarm)
+        val next = snapshot.nextAlarm
+        if (next == null) {
             views.setTextViewText(R.id.widget_time, context.getString(R.string.widget_no_alarm))
-            views.setTextViewText(R.id.widget_subtitle, " ")
-            return
+            views.setTextViewText(R.id.widget_subtitle, context.getString(R.string.widget_create_alarm))
+        } else {
+            val alarm = next.alarm
+            val zone = AlarmMath.timeZone(alarm.timeZoneId)
+            views.setTextViewText(
+                R.id.widget_time,
+                TimeFormat.formatTime(zone, snapshot.use24h, alarm.hour, alarm.minute)
+            )
+            val zoneName = CityCatalog.ALL.firstOrNull { it.tzId == alarm.timeZoneId }?.name
+                ?: alarm.timeZoneId.substringAfterLast('/').replace('_', ' ').ifBlank { zone.id }
+            val subtitle = listOf(
+                alarm.label,
+                zoneName,
+                WidgetDataSource.formatCountdown(
+                    context,
+                    next.triggerAtMillis,
+                    System.currentTimeMillis()
+                )
+            ).filter { it.isNotBlank() }.joinToString(" \u00B7 ")
+            views.setTextViewText(R.id.widget_subtitle, subtitle)
         }
-        val zone = AlarmMath.timeZone(alarm.timeZoneId)
-        val time = TimeFormat.formatTime(zone, use24h = true, hour = alarm.hour, minute = alarm.minute)
-        views.setTextViewText(R.id.widget_time, time)
-        val nextMs = AlarmMath.nextTrigger(
-            System.currentTimeMillis(), alarm.hour, alarm.minute,
-            alarm.daysOfWeek, alarm.timeZoneId
-        )
-        val delta = nextMs - System.currentTimeMillis()
-        val countdown = context.getString(R.string.widget_countdown, CountdownLongFormat.format(delta))
-        val zoneLabel = alarm.timeZoneId.ifBlank { zone.id }
-        val sub = if (alarm.label.isBlank()) "$zoneLabel · $countdown"
-        else "${alarm.label} · $zoneLabel · $countdown"
-        views.setTextViewText(R.id.widget_subtitle, sub)
+
+        views.setOnClickPendingIntent(R.id.widget_root, openAlarm(context))
+        manager.updateAppWidget(id, views)
     }
 
     private fun openAlarm(context: Context): PendingIntent {
@@ -72,7 +77,9 @@ class NextAlarmWidget : AppWidgetProvider() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         return PendingIntent.getActivity(
-            context, 0, intent,
+            context,
+            0,
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }

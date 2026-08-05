@@ -3,7 +3,6 @@ package com.futureclock.app.widget
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -41,7 +40,9 @@ class AnalogClockWidget : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, layout)
 
         // Render analog bitmap
-        val size = maxW.coerceAtMost(maxH).dp(context)
+        // RemoteViews sends this bitmap through Binder. Large launcher cells on high-density
+        // screens can otherwise exceed the transaction limit and leave a blank 3x3 widget.
+        val size = maxW.coerceAtMost(maxH).dp(context).coerceIn(MIN_RENDER_PX, MAX_RENDER_PX)
         val bmp: Bitmap = ClockRenderer.renderBitmap(size, size, Calendar.getInstance())
         views.setImageViewBitmap(R.id.analog_clock, bmp)
 
@@ -70,4 +71,9 @@ class AnalogClockWidget : AppWidgetProvider() {
 
     private fun Int.dp(context: Context): Int =
         (this * context.resources.displayMetrics.density).toInt()
+
+    companion object {
+        private const val MIN_RENDER_PX = 160
+        private const val MAX_RENDER_PX = 384
+    }
 }

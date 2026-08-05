@@ -45,7 +45,12 @@ class SettingsFragment : Fragment() {
                 }
             )
 
-            binding.switch24h.setOnCheckedChangeListener { _, checked -> viewLifecycleOwner.lifecycleScope.launch { settings.setUse24h(checked) } }
+            binding.switch24h.setOnCheckedChangeListener { _, checked ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    settings.setUse24h(checked)
+                    com.futureclock.app.widget.WidgetUpdateScheduler.refreshAll(requireContext())
+                }
+            }
             binding.switchSeconds.setOnCheckedChangeListener { _, checked -> viewLifecycleOwner.lifecycleScope.launch { settings.setShowSeconds(checked) } }
             binding.sliderSnooze.addOnChangeListener { _, value, _ ->
                 val v = value.toInt()
