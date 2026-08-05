@@ -49,6 +49,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.clock.FullscreenClockActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FutureClock.FullscreenClock" />
+
         <!-- World clock city picker -->
         <activity
             android:name=".ui.world.WorldPickerActivity"

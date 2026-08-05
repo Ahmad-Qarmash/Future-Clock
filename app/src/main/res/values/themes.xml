@@ -119,6 +119,11 @@
         <item name="android:textColor">@color/selector_secondary_button_text</item>
     </style>
 
+    <style name="Theme.FutureClock.FullscreenClock" parent="Theme.FutureClock">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+
     <style name="Widget.FutureClock.Button.Destructive" parent="Widget.FutureClock.Button.Outlined">
         <item name="strokeColor">@color/status_error</item>
         <item name="android:textColor">@color/status_error</item>

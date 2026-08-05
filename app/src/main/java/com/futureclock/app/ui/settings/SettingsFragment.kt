@@ -33,6 +33,11 @@ class SettingsFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         binding.textVersion.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
+        binding.textSnoozeValue.text = resources.getQuantityString(
+            R.plurals.duration_minutes,
+            DEFAULT_SNOOZE_MINUTES,
+            DEFAULT_SNOOZE_MINUTES
+        )
         binding.btnPrivacyOptions.setOnClickListener {
             ConsentManager.showPrivacyOptions(requireActivity()) { available ->
                 if (!available && _binding != null) {
@@ -90,5 +95,9 @@ class SettingsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val DEFAULT_SNOOZE_MINUTES = 5
     }
 }

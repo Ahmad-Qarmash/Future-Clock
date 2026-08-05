@@ -62,6 +62,9 @@
     <string name="clock_utc_offset">UTC offset</string>
     <string name="clock_use_device_time">Using device time zone</string>
     <string name="clock_custom_zone_active">Custom fixed-offset time zone</string>
+    <string name="clock_open_fullscreen">Open full-screen clock</string>
+    <string name="clock_fullscreen_title">Focus clock</string>
+    <string name="clock_fullscreen_subtitle">Your time and what comes next</string>
     <string name="clock_sun_format">Sunrise %1$s · Sunset %2$s</string>
     <string name="clock_no_sun">—</string>
 
@@ -193,6 +196,7 @@
     <string name="settings_theme_dark_short">Dark</string>
     <string name="settings_alarms">Alarms</string>
     <string name="settings_snooze_duration">Snooze duration</string>
+    <string name="settings_snooze_default">5 min</string>
     <string name="settings_default_sound">Default sound</string>
     <string name="settings_gradual_volume">Gradually increase volume</string>
     <string name="settings_about">About</string>
