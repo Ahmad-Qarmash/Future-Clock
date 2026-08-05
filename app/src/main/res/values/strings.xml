@@ -218,11 +218,33 @@
     <!-- ================= Widgets ================= -->
     <string name="widget_analog_label">Future Clock — Analog</string>
     <string name="widget_digital_label">Future Clock — Digital</string>
-    <string name="widget_world_label">Future Clock — World</string>
+    <string name="widget_world_label">Future Clock — World &amp; Alarms</string>
     <string name="widget_next_alarm_label">Future Clock — Next Alarm</string>
+    <string name="widget_world_dashboard_title">WORLD &amp; ALARMS</string>
+    <string name="widget_next_alarm_short">NEXT ALARM</string>
     <string name="widget_no_alarm">No alarm set</string>
+    <string name="widget_no_alarm_short">No alarm</string>
+    <string name="widget_create_alarm">Tap to create an alarm</string>
+    <string name="widget_loading">Updating…</string>
     <string name="widget_temporarily_unavailable">Updating…</string>
     <string name="widget_time_unavailable">—</string>
+    <string name="widget_tomorrow">Tomorrow</string>
+    <string name="widget_yesterday">Yesterday</string>
+    <string name="widget_duration_days">%1$dd %2$dh</string>
+    <string name="widget_duration_hours">%1$dh %2$dm</string>
+    <string name="widget_duration_minutes">%1$dm</string>
+    <plurals name="widget_city_count">
+        <item quantity="one">%1$d city</item>
+        <item quantity="other">%1$d cities</item>
+    </plurals>
+    <plurals name="widget_days_ahead">
+        <item quantity="one">+%1$d day</item>
+        <item quantity="other">+%1$d days</item>
+    </plurals>
+    <plurals name="widget_days_behind">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
     <string name="widget_add_cities">Choose up to three places</string>
     <string name="widget_city_limit">You can choose up to three places</string>
     <string name="widget_choose_one_city">Choose at least one place</string>

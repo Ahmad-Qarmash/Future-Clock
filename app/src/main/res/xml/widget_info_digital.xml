@@ -10,5 +10,5 @@
     android:widgetCategory="home_screen"
     android:initialLayout="@layout/widget_digital_small"
     android:previewLayout="@layout/widget_digital_small"
-    android:updatePeriodMillis="0"
+    android:updatePeriodMillis="1800000"
     android:description="@string/widget_digital_label" />
