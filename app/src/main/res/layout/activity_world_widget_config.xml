@@ -37,12 +37,48 @@
             android:textColor="@color/text_primary" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:text="@string/world_catalog_summary"
+        android:textAppearance="@style/TextAppearance.FutureClock.Caption" />
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/space_m"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="@dimen/space_xl" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/space_l" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/loading" />
+
+        <TextView
+            android:id="@+id/empty_results"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/world_no_results"
+            android:textAppearance="@style/TextAppearance.FutureClock.Body"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_done"
+        style="@style/Widget.FutureClock.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_l"
+        android:text="@string/action_done" />
 </LinearLayout>

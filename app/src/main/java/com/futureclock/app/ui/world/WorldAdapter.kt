@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.futureclock.app.R
 import com.futureclock.app.data.db.WorldCityEntity
 import com.futureclock.app.databinding.ItemWorldCityBinding
+import com.futureclock.app.util.AlarmMath
 import com.futureclock.app.util.TimeFormat
 import java.util.Calendar
 import java.util.Collections
@@ -16,6 +17,12 @@ class WorldAdapter(
 ) : RecyclerView.Adapter<WorldAdapter.VH>() {
 
     private val items = mutableListOf<WorldCityEntity>()
+    var use24h: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyDataSetChanged()
+        }
 
     fun submit(newItems: List<WorldCityEntity>) {
         items.clear()
@@ -40,14 +47,14 @@ class WorldAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val city = items[position]
-        val zone = TimeZone.getTimeZone(city.tzId)
+        val zone = AlarmMath.timeZone(city.tzId)
         val cal = Calendar.getInstance(zone)
         val h = cal.get(Calendar.HOUR_OF_DAY)
         val m = cal.get(Calendar.MINUTE)
         holder.binding.cityFlag.text = city.flag
         holder.binding.cityName.text = city.displayName
         holder.binding.cityCountry.text = city.country
-        holder.binding.cityTime.text = TimeFormat.formatTime(use24h = true, hour = h, minute = m)
+        holder.binding.cityTime.text = TimeFormat.formatTime(use24h = use24h, hour = h, minute = m)
         val deltaDays = TimeFormat.dayDelta(zone)
         holder.binding.cityDayDiff.text = when {
             deltaDays > 0 -> holder.itemView.context.getString(R.string.world_day, deltaDays)

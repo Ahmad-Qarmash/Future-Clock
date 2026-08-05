@@ -5,11 +5,12 @@ A free, ad-supported universal Android clock app with a bold cyberpunk neon desi
 ## Main features
 
 - **Live clock tab** — large neon digits, ticking seconds, date, day, battery, and timezone
-- **World clock** — add any of 150+ curated cities, search by name or country, automatic day-difference indicators
-- **Alarms** — repeat by day-of-week, custom label, gradual volume, vibration, snooze, and an optional math challenge to force wake-up
+- **World clock** — search 235,000+ offline cities, towns, and villages by place, alias, country, or timezone
+- **Alarms** — anchor an alarm to any catalog place, with saved World Clock locations suggested first; its local wall time survives travel and daylight-saving changes
 - **Timer** — circular neon progress, presets (1/3/5/10/30 min), foreground service, system notification with pause/reset
-- **Stopwatch** — sub-second precision, lap history, share via system intent
-- **Settings** — 12/24 h, show seconds, snooze length
+- **Focused navigation** — Clock, World, Alarms, Timer, and More stay within Android’s five-destination guidance
+- **Stopwatch** — sub-second precision, lap history, and sharing, available from More
+- **Settings** — 12/24 h, show seconds, snooze length, and System/Light/Dark appearance
 - **Four home-screen widgets** — analog, digital, world clock, and next-alarm
 
 ## Stack
@@ -43,8 +44,8 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 | Command                       | Purpose                                              |
 | ----------------------------- | ---------------------------------------------------- |
-| `./gradlew assembleDebug`     | Build a debug APK with test AdMob IDs                |
-| `./gradlew assembleRelease`   | Build a release AAB (requires your signing key)      |
+| `./gradlew assembleDebug`     | Build a debug APK with safe Google test ads           |
+| `./gradlew bundleRelease`     | Build a signed production AAB (requires local release configuration) |
 | `./gradlew installDebug`      | Install the debug APK on a connected device          |
 | `./gradlew lint`              | Run Android Lint                                     |
 | `./gradlew clean`             | Wipe build outputs                                   |
@@ -59,6 +60,7 @@ ViewModels / StateFlow
 Repositories
         ↓
 Room (alarms, world cities) + DataStore (preferences)
+Separate versioned SQLite catalog (disposable offline GeoNames search data)
         ↑
 AlarmScheduler (AlarmManager)  — AlarmReceiver  — AlarmRingActivity
 BootReceiver                   — re-arms alarms on BOOT_COMPLETED

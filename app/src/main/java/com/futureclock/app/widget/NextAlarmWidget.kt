@@ -8,7 +8,7 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
-import com.futureclock.app.data.tz.CityCatalog
+import com.futureclock.app.data.db.AlarmEntity
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.util.AlarmMath
 import com.futureclock.app.util.TimeFormat
@@ -53,11 +53,9 @@ class NextAlarmWidget : AppWidgetProvider() {
                 R.id.widget_time,
                 TimeFormat.formatTime(zone, snapshot.use24h, alarm.hour, alarm.minute)
             )
-            val zoneName = CityCatalog.ALL.firstOrNull { it.tzId == alarm.timeZoneId }?.name
-                ?: alarm.timeZoneId.substringAfterLast('/').replace('_', ' ').ifBlank { zone.id }
             val subtitle = listOf(
                 alarm.label,
-                zoneName,
+                alarmPlace(alarm, zone.id),
                 WidgetDataSource.formatCountdown(
                     context,
                     next.triggerAtMillis,
@@ -69,6 +67,15 @@ class NextAlarmWidget : AppWidgetProvider() {
 
         views.setOnClickPendingIntent(R.id.widget_root, openAlarm(context))
         manager.updateAppWidget(id, views)
+    }
+
+    private fun alarmPlace(alarm: AlarmEntity, fallbackZoneId: String): String {
+        val selectedPlace = listOf(alarm.placeFlag, alarm.placeName)
+            .filter { it.isNotBlank() }
+            .joinToString(" ")
+        return selectedPlace.ifBlank {
+            alarm.timeZoneId.substringAfterLast('/').replace('_', ' ').ifBlank { fallbackZoneId }
+        }
     }
 
     private fun openAlarm(context: Context): PendingIntent {

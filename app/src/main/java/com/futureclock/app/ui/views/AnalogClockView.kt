@@ -16,6 +16,7 @@ class AnalogClockView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     var timeZone: TimeZone = TimeZone.getDefault()
+    var timeOffsetMillis: Long = 0L
     var showSeconds: Boolean = true
     var faceColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurface, 0xFF151D2B.toInt())
     var strokeColor: Int = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary, 0xFF8EAAFF.toInt())
@@ -45,7 +46,7 @@ class AnalogClockView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        now.timeInMillis = System.currentTimeMillis()
+        now.timeInMillis = System.currentTimeMillis() + timeOffsetMillis
         now.timeZone = timeZone
         ClockRenderer.draw(
             canvas = canvas,

@@ -1,97 +1,59 @@
-# Ads (AdMob)
+# AdMob monetisation
 
-Future Clock uses Google AdMob for monetisation. Banner ads sit above the
-bottom navigation on every screen. Interstitials appear at well-defined
-moments that match user intent (dismissing an alarm, adding a city) plus
-every fifth tab change, with a hard minimum interval of one minute so
-they never feel spammy.
+Future Clock ships anchored adaptive banner ads. They are shown above the bottom
+navigation after the Google User Messaging Platform (UMP) has collected the
+current session's consent state.
 
-## Ad units
+The first public release deliberately has no interstitials. Dismissing an alarm
+and changing tabs are not meaningful breaks in a timekeeping task, so full-screen
+ads there would be disruptive. Banner inventory provides a policy-friendly,
+respectful starting point for revenue.
 
-| Type          | Variable                      | Default (test ID)                                          |
-| ------------- | ----------------------------- | ---------------------------------------------------------- |
-| App ID        | `strings.xml` → `admob_app_id`| `ca-app-pub-3940256099942544~3347511713`                   |
-| Banner        | `BuildConfig.BANNER_AD_UNIT_ID`     | `ca-app-pub-3940256099942544/6300978111`             |
-| Interstitial  | `BuildConfig.INTERSTITIAL_AD_UNIT_ID`| `ca-app-pub-3940256099942544/1033173712`            |
+## Production setup
 
-The defaults above are Google-provided test IDs and are safe to ship in a
-debug APK. **They will not earn any revenue** — Google only pays on real
-production unit IDs.
+1. Create the Android app in [AdMob](https://admob.google.com/) with the final
+   package name: `com.futureclock.app`.
+2. Create one **anchored adaptive banner** ad unit and copy the App ID and banner
+   unit ID.
+3. Copy [keystore.properties.example](./keystore.properties.example) to
+   `keystore.properties` at the repository root. This file is ignored by Git.
+4. Set the AdMob entries using your values:
 
-## Swapping in your real unit IDs
-
-1. Create an AdMob account at https://admob.google.com.
-2. Create a new app and three ad units: one banner, one interstitial.
-3. Copy your App ID (looks like `ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY`)
-   and replace the value of `admob_app_id` in `res/values/strings.xml`.
-4. Open `app/build.gradle.kts` and replace the two `buildConfigField` lines
-   inside `buildTypes.release` with your real banner and interstitial unit IDs:
-
-   ```kotlin
-   buildTypes {
-       release {
-           buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-XXXX/YYY\"")
-           buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-XXXX/ZZZ\"")
-           // ... rest
-       }
-   }
+   ```properties
+   admobAppId=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+   admobBannerAdUnitId=ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ
    ```
 
-5. Re-build a release APK and the IDs will be baked into `BuildConfig`.
+   You may instead supply `ADMOB_APP_ID` and `ADMOB_BANNER_AD_UNIT_ID` as
+   environment variables in CI.
+5. In AdMob, create and publish the UMP privacy message for the app. UMP uses
+   the App ID to load that message.
 
-The `debug` build type intentionally keeps the test IDs so your local
-testing never serves a real ad or risks your account.
+The debug variant always uses Google's official test App ID and banner unit ID.
+It cannot request paid ads. The release build injects your IDs from local
+configuration and refuses to build if either one is missing.
 
-## Where the ads appear
+## Consent and privacy
 
-- **Banner** — every tab, above the bottom nav. Sits in `MainActivity.ad_container`
-  which is added by the layout once at startup.
-- **Interstitial** — at the following triggers, only when both the minimum
-  interval (60 s) and the cadence rule are satisfied:
+- UMP updates consent information on every launch before Mobile Ads initializes
+  or an ad request is made.
+- If consent cannot be collected on a first install, the app does not request
+  ads. A previously valid consent state can continue to be used when a refresh
+  temporarily fails, as allowed by UMP.
+- **Settings → Privacy choices → Manage** lets people reopen the UMP privacy
+  options form whenever it is available.
+- You still need a public privacy-policy page and must add its URL in Google
+  Play Console and in the AdMob privacy/disclosures flow.
 
-  | Trigger               | Cadence                          |
-  | --------------------- | -------------------------------- |
-  | Alarm dismiss         | Every time                       |
-  | Add city              | Every time                       |
-  | Tab change            | Every 5th                        |
+## Testing safely
 
-  Rate-limiting is enforced in `AdManager.maybeShowInterstitial`. If the
-  minimum interval has not elapsed, the call returns `false` and the user
-  continues without interruption.
+Use the debug build or mark your own physical device as a test device in AdMob.
+Android emulators are automatically recognized as test devices. Never click
+production ads while testing; it can be treated as invalid traffic. See Google's
+[test-ad guidance](https://developers.google.com/admob/android/test-ads).
 
-## Removing ads
+## app-ads.txt
 
-Two options:
-
-1. **Strip the AdMob call from the layout** — remove the
-   `<FrameLayout android:id="@+id/ad_container" .../>` block from
-   `res/layout/activity_main.xml` and delete the `setupBannerAd()` call in
-   `MainActivity.onCreate`. Drop the `play-services-ads` dependency from
-   `app/build.gradle.kts` and remove `AdManager.kt` plus the
-   `meta-data com.google.android.gms.ads.APPLICATION_ID` line in the manifest.
-2. **Premium unlock** — a future option. The architecture already isolates
-   ad calls in `AdManager`, so you can add a `BillingClient` integration
-   that flips a `showAds` flag in `SettingsRepository`.
-
-## COPPA / GDPR
-
-If you target EEA or California users, you must:
-
-- Show a consent dialog before requesting ads. Use Google's
-  [UMP SDK](https://developers.google.com/admob/ump/android/quick-start) by
-  adding `play-services-ump` and calling `ConsentInformation.requestConsentInfoUpdate`
-  before `MobileAds.initialize`.
-- Mark the AdMob account as "tagged for child-directed treatment" if the app
-  is aimed at children under 13.
-
-The current build does not yet ship a consent dialog. Add the UMP integration
-before publishing to the Play Store.
-
-## Policy reminders
-
-- The **banner ad is always above content**, not on top of it. The ad container
-  is sibling-positioned to the bottom nav and never overlays the fragment.
-- The **interstitial never fires within 60 s** of the previous one. This is
-  enforced centrally in `AdManager` and not bypassable from feature code.
-- The **app makes no ad-related network calls before consent** in production
-  builds once you add UMP.
+After the app is listed on Google Play, add the developer website to the store
+listing and host an `app-ads.txt` file on that verified domain. AdMob uses it to
+verify authorised sellers and improve monetisation eligibility.

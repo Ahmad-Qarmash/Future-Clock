@@ -9,16 +9,19 @@ import android.view.View
 import android.widget.RemoteViews
 import com.futureclock.app.MainActivity
 import com.futureclock.app.R
+import com.futureclock.app.data.db.AlarmEntity
 import com.futureclock.app.data.db.WorldCityEntity
 import com.futureclock.app.data.tz.City
-import com.futureclock.app.data.tz.CityCatalog
 import com.futureclock.app.notification.Actions
 import com.futureclock.app.util.AlarmMath
 import com.futureclock.app.util.TimeFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.TimeZone
+import kotlin.math.absoluteValue
 
 class WorldClockWidget : AppWidgetProvider() {
 
@@ -78,7 +81,13 @@ class WorldClockWidget : AppWidgetProvider() {
             else -> 1
         }
         val views = RemoteViews(context.packageName, layout)
-        val cities = snapshot.cities.ifEmpty { legacyOrDefaultCities(context, id) }
+        val configuredCities = loadConfiguredCities(context, id)
+            ?.takeIf { it.isNotEmpty() }
+            ?.mapIndexed { index, city -> city.toEntity(index) }
+        val cities = configuredCities
+            ?: snapshot.cities.ifEmpty {
+                defaultCities().mapIndexed { index, city -> city.toEntity(index) }
+            }
 
         views.setTextViewText(
             R.id.widget_city_count,
@@ -122,7 +131,7 @@ class WorldClockWidget : AppWidgetProvider() {
 
         views.setTextViewText(cityIds[index], cityLabel)
         views.setTextViewText(metaIds[index], meta)
-        configureTextClock(views, timeIds[index], city.tzId, use24h)
+        configureTextClock(views, timeIds[index], zone.id, use24h)
     }
 
     private fun renderNextAlarm(
@@ -139,37 +148,32 @@ class WorldClockWidget : AppWidgetProvider() {
 
         val alarm = next.alarm
         val zone = AlarmMath.timeZone(alarm.timeZoneId)
-        val time = TimeFormat.formatTime(zone, use24h, alarm.hour, alarm.minute)
         val countdown = WidgetDataSource.formatCountdown(
             context,
             next.triggerAtMillis,
             System.currentTimeMillis()
         )
-        val zoneName = CityCatalog.ALL.firstOrNull { it.tzId == alarm.timeZoneId }?.name
-            ?: alarm.timeZoneId.substringAfterLast('/').replace('_', ' ').ifBlank { zone.id }
-        val subtitle = listOf(alarm.label, zoneName, countdown)
+        val subtitle = listOf(alarm.label, alarmPlace(alarm, zone.id), countdown)
             .filter { it.isNotBlank() }
             .joinToString(" \u00B7 ")
-        views.setTextViewText(R.id.widget_alarm_time, time)
+        views.setTextViewText(
+            R.id.widget_alarm_time,
+            TimeFormat.formatTime(zone, use24h, alarm.hour, alarm.minute)
+        )
         views.setTextViewText(R.id.widget_alarm_subtitle, subtitle)
     }
 
-    private fun legacyOrDefaultCities(context: Context, id: Int): List<WorldCityEntity> {
-        val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString("widget_$id", null)
-        val legacy = raw.orEmpty().split(SEPARATOR)
+    private fun alarmPlace(alarm: AlarmEntity, fallbackZoneId: String): String {
+        val selectedPlace = listOf(alarm.placeFlag, alarm.placeName)
             .filter { it.isNotBlank() }
-            .mapNotNull { tzId -> CityCatalog.ALL.find { it.tzId == tzId } }
-        return (legacy.ifEmpty { defaultCities() }).mapIndexed { index, city ->
-            city.toEntity(index)
+            .joinToString(" ")
+        return selectedPlace.ifBlank {
+            alarm.timeZoneId.substringAfterLast('/').replace('_', ' ').ifBlank { fallbackZoneId }
         }
     }
 
-    private fun defaultCities(): List<City> =
-        listOf("America/New_York", "Europe/London", "Asia/Tokyo")
-            .mapNotNull { tzId -> CityCatalog.ALL.find { it.tzId == tzId } }
-
     private fun City.toEntity(order: Int) = WorldCityEntity(
+        locationId = id,
         tzId = tzId,
         displayName = name,
         country = country,
@@ -235,11 +239,83 @@ class WorldClockWidget : AppWidgetProvider() {
         const val PREFS = "world_widget_prefs"
         private const val SEPARATOR = "|"
 
-        fun saveCities(context: Context, id: Int, tzIds: List<String>) {
+        fun saveCities(context: Context, id: Int, cities: List<City>) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .edit()
-                .putString("widget_$id", tzIds.joinToString(SEPARATOR))
+                .putString("widget_$id", encodeCities(cities))
                 .apply()
         }
+
+        internal fun encodeCities(cities: List<City>): String {
+            val array = JSONArray()
+            cities.take(3).forEach { city ->
+                array.put(
+                    JSONObject()
+                        .put("id", city.id)
+                        .put("name", city.name)
+                        .put("country", city.country)
+                        .put("countryCode", city.countryCode)
+                        .put("flag", city.flag)
+                        .put("admin1", city.admin1)
+                        .put("tzId", city.tzId)
+                        .put("population", city.population)
+                )
+            }
+            return array.toString()
+        }
+
+        fun loadCities(context: Context, id: Int): List<City> =
+            loadConfiguredCities(context, id)?.ifEmpty(::defaultCities) ?: defaultCities()
+
+        internal fun loadConfiguredCities(context: Context, id: Int): List<City>? {
+            val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getString("widget_$id", null)
+                ?: return null
+            if (!raw.trimStart().startsWith("[")) {
+                return raw.split(SEPARATOR)
+                    .filter { it.isNotBlank() }
+                    .map(::legacyCity)
+                    .ifEmpty(::defaultCities)
+            }
+            return decodeCities(raw).getOrNull()?.ifEmpty(::defaultCities)
+        }
+
+        internal fun decodeCities(raw: String): Result<List<City>> = runCatching {
+            val array = JSONArray(raw)
+            buildList {
+                for (index in 0 until array.length()) {
+                    val item = array.getJSONObject(index)
+                    add(
+                        City(
+                            id = item.getLong("id"),
+                            name = item.getString("name"),
+                            country = item.optString("country"),
+                            countryCode = item.optString("countryCode"),
+                            flag = item.optString("flag", "\uD83C\uDF10"),
+                            admin1 = item.optString("admin1"),
+                            tzId = item.getString("tzId"),
+                            population = item.optLong("population")
+                        )
+                    )
+                }
+            }
+        }
+
+        private fun legacyCity(tzId: String): City = City(
+            id = -(tzId.hashCode().toLong().absoluteValue + 10_000L),
+            name = tzId.substringAfterLast('/').replace('_', ' '),
+            country = tzId.substringBefore('/').replace('_', ' '),
+            countryCode = "",
+            flag = "\uD83C\uDF10",
+            admin1 = "",
+            tzId = tzId,
+            population = 0
+        )
+
+        private fun defaultCities(): List<City> = listOf(
+            City(-1, "New York", "United States", "US", "\uD83C\uDDFA\uD83C\uDDF8", "New York", "America/New_York", 0),
+            City(-2, "London", "United Kingdom", "GB", "\uD83C\uDDEC\uD83C\uDDE7", "England", "Europe/London", 0),
+            City(-3, "Tokyo", "Japan", "JP", "\uD83C\uDDEF\uD83C\uDDF5", "Tokyo", "Asia/Tokyo", 0)
+        )
     }
 }

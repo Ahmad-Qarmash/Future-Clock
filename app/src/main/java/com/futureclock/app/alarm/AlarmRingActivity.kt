@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.futureclock.app.FutureClockApp
 import com.futureclock.app.R
-import com.futureclock.app.ads.AdManager
 import com.futureclock.app.databinding.ActivityAlarmRingBinding
 import com.futureclock.app.util.TimeFormat
 import com.futureclock.app.util.AlarmMath
@@ -68,8 +67,8 @@ class AlarmRingActivity : AppCompatActivity() {
         alarmId = intent.getLongExtra(com.futureclock.app.notification.Extras.ALARM_ID, -1L)
         if (alarmId < 0) { finish(); return }
 
-        binding.btnSnooze.setOnClickListener { onSnooze(it) }
-        binding.btnDismiss.setOnClickListener { onDismiss(it) }
+        binding.btnSnooze.setOnClickListener { onSnooze() }
+        binding.btnDismiss.setOnClickListener { onDismiss() }
         loadAlarm()
     }
 
@@ -201,7 +200,7 @@ class AlarmRingActivity : AppCompatActivity() {
         challengeJob?.cancel()
     }
 
-    fun onSnooze(view: android.view.View) {
+    private fun onSnooze() {
         val app = application as FutureClockApp
         lifecycleScope.launch {
             val alarm = app.database.alarmDao().getById(alarmId) ?: return@launch finish()
@@ -210,16 +209,15 @@ class AlarmRingActivity : AppCompatActivity() {
         }
     }
 
-    fun onDismiss(view: android.view.View) {
+    private fun onDismiss() {
         // If challenge active, require correct answer
         if (binding.challengeContainer.visibility == android.view.View.VISIBLE) {
             val ans = binding.editChallengeAnswer.text.toString().toIntOrNull() ?: -1
             if (ans != challengeAnswer) {
-                binding.editChallengeAnswer.error = "Try again"
+                binding.editChallengeAnswer.error = getString(R.string.alarm_challenge_try_again)
                 return
             }
         }
-        AdManager.maybeShowInterstitial(this, AdManager.Trigger.ALARM_DISMISS)
         finishAndRemoveTask()
     }
 }

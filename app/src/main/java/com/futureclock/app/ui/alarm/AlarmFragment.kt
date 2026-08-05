@@ -58,6 +58,9 @@ class AlarmFragment : Fragment() {
         binding.fabAdd.setOnClickListener {
             startActivity(Intent(requireContext(), AlarmEditActivity::class.java))
         }
+        binding.btnSettings.setOnClickListener {
+            (activity as? com.futureclock.app.MainActivity)?.openSettings()
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             val use24h = app.settings.use24h.first()

@@ -1,20 +1,53 @@
+# Android Studio / Gradle local state
 *.iml
-.gradle
+/.gradle/
+/.kotlin/
 /local.properties
 /.idea/
+# Keep .run/ tracked: it contains the shared Android `app` run configuration.
 .DS_Store
-/build
+/build/
 /captures
 .externalNativeBuild
 .cxx
-local.properties
-/app/build
-/app/release
+/app/build/
+/app/release/
 *.apk
 *.aab
+*.idsig
+
+# Release signing and monetisation credentials
 *.keystore
-google-services.json
+*.jks
+*.p12
+*.pem
 keystore.properties
+release.properties
+signing.properties
+credentials.properties
+google-services.json
+.env
+.env.*
+!.env.example
+
+# Runtime diagnostics
+*.hprof
+*.log
+
+# Python tooling
+__pycache__/
+*.py[cod]
+
+# GeoNames source downloads and SQLite scratch files
+cities500.zip
+cities500.txt
+countryInfo.txt
+admin1CodesASCII.txt
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+/app/src/main/assets/places-*.sqlite
+/tools/catalog-work/
 
 # Web preview / Playwright
 /web/node_modules/

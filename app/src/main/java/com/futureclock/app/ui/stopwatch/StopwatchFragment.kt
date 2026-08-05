@@ -35,6 +35,12 @@ class StopwatchFragment : Fragment() {
         lapAdapter = LapAdapter()
         binding.recyclerLaps.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerLaps.adapter = lapAdapter
+        binding.btnBack.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.btnSettings.setOnClickListener {
+            (activity as? com.futureclock.app.MainActivity)?.openSettings()
+        }
 
         binding.chronometer.setOnChronometerTickListener { /* updated via flow */ }
         binding.btnToggle.setOnClickListener {

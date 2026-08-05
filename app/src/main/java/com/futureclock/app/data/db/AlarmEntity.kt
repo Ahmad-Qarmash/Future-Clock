@@ -20,5 +20,10 @@ data class AlarmEntity(
     @ColumnInfo(name = "difficulty") val difficulty: Int = 0, // 0=off, 1=math easy, 2=math hard, 3=type
     /** IANA timezone ID. Empty only for alarms migrated from v1, which retain device-time behavior. */
     @ColumnInfo(name = "timezone_id") val timeZoneId: String = "",
+    /** Snapshot of the selected place. The alarm remains independent from World Clock changes. */
+    @ColumnInfo(name = "place_id") val placeId: Long = 0L,
+    @ColumnInfo(name = "place_name") val placeName: String = "",
+    @ColumnInfo(name = "place_country") val placeCountry: String = "",
+    @ColumnInfo(name = "place_flag") val placeFlag: String = "",
     @ColumnInfo(name = "next_trigger_ms") val nextTriggerMs: Long = 0L
 )

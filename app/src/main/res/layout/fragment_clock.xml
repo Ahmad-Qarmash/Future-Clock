@@ -54,10 +54,15 @@
         </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_clock"
             style="@style/Widget.FutureClock.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xl">
+            android:layout_marginTop="@dimen/space_xl"
+            android:clickable="true"
+            android:contentDescription="@string/clock_open_fullscreen"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -91,19 +96,30 @@
                         android:fontFamily="sans-serif-light"
                         android:includeFontPadding="false"
                         android:textColor="@color/text_primary"
-                        android:textSize="@dimen/clock_huge"
+                        android:textSize="@dimen/clock_big"
                         tools:text="12:34" />
 
                     <TextView
                         android:id="@+id/text_seconds"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
+                        android:layout_marginBottom="8dp"
                         android:fontFamily="sans-serif-medium"
                         android:includeFontPadding="false"
                         android:textColor="@color/brand_secondary"
                         android:textSize="@dimen/text_title"
                         tools:text=":56" />
+
+                    <TextView
+                        android:id="@+id/text_period"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_xs"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_body"
+                        android:textStyle="bold"
+                        tools:text="PM" />
                 </LinearLayout>
 
                 <TextView
@@ -113,13 +129,65 @@
                     android:layout_marginTop="@dimen/space_s"
                     android:textColor="@color/text_secondary"
                     android:textSize="@dimen/text_subtitle"
-                    tools:text="January 1, 2026" />
+                    tools:text="Monday, January 1, 2026" />
 
                 <com.futureclock.app.ui.views.AnalogClockView
                     android:id="@+id/analog_clock"
-                    android:layout_width="188dp"
-                    android:layout_height="188dp"
+                    android:layout_width="176dp"
+                    android:layout_height="176dp"
                     android:layout_marginTop="@dimen/space_xl" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FutureClock.Card.Flat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/space_l">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/clock_format_label"
+                    android:textAppearance="@style/TextAppearance.FutureClock.Section" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/time_format_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/format_12h"
+                        style="@style/Widget.FutureClock.Button.Toggle"
+                        android:layout_width="80dp"
+                        android:layout_height="48dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="@dimen/space_m"
+                        android:paddingEnd="@dimen/space_m"
+                        android:singleLine="true"
+                        android:text="@string/clock_format_12" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/format_24h"
+                        style="@style/Widget.FutureClock.Button.Toggle"
+                        android:layout_width="80dp"
+                        android:layout_height="48dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="@dimen/space_m"
+                        android:paddingEnd="@dimen/space_m"
+                        android:singleLine="true"
+                        android:text="@string/clock_format_24" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -131,11 +199,15 @@
             android:orientation="horizontal">
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_time_zone"
                 style="@style/Widget.FutureClock.Card.Flat"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="@dimen/space_xs"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -146,18 +218,29 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/clock_battery_label"
+                        android:text="@string/clock_timezone_label"
                         android:textAppearance="@style/TextAppearance.FutureClock.Caption" />
 
                     <TextView
-                        android:id="@+id/text_battery"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/text_timezone_name"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_s"
-                        android:textColor="@color/status_success"
-                        android:textSize="@dimen/text_title"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_subtitle"
                         android:textStyle="bold"
-                        tools:text="Battery 85%" />
+                        tools:text="Jerusalem" />
+
+                    <TextView
+                        android:id="@+id/text_timezone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:textColor="@color/brand_secondary"
+                        android:textSize="@dimen/text_body"
+                        tools:text="UTC+03:00" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -177,20 +260,59 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/clock_timezone_label"
+                        android:text="@string/clock_calendar_label"
                         android:textAppearance="@style/TextAppearance.FutureClock.Caption" />
 
                     <TextView
-                        android:id="@+id/text_timezone"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/text_calendar"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_s"
-                        android:textColor="@color/brand_secondary"
-                        android:textSize="@dimen/text_title"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_subtitle"
                         android:textStyle="bold"
-                        tools:text="UTC+03:00" />
+                        tools:text="Week 31 · Day 213" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.FutureClock.Card.Flat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/space_l">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/clock_next_alarm_label"
+                    android:textAppearance="@style/TextAppearance.FutureClock.Caption" />
+
+                <TextView
+                    android:id="@+id/text_next_alarm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_subtitle"
+                    android:textStyle="bold"
+                    tools:text="Tomorrow · 07:30" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_custom_time"
+            style="@style/Widget.FutureClock.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:text="@string/clock_custom_time"
+            app:icon="@drawable/ic_world" />
     </LinearLayout>
 </ScrollView>
