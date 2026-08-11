@@ -31,6 +31,9 @@ object Actions {
     const val ACTION_OPEN_WORLD_TAB = "com.futureclock.app.ACTION_OPEN_WORLD_TAB"
     const val ACTION_OPEN_TIMER_TAB = "com.futureclock.app.ACTION_OPEN_TIMER_TAB"
     const val ACTION_OPEN_STOPWATCH_TAB = "com.futureclock.app.ACTION_OPEN_STOPWATCH_TAB"
+    const val ACTION_WORLD_WIDGET_NEXT_PAGE = "com.futureclock.app.ACTION_WORLD_WIDGET_NEXT_PAGE"
+    const val ACTION_WORLD_WIDGET_PREVIOUS_PAGE = "com.futureclock.app.ACTION_WORLD_WIDGET_PREVIOUS_PAGE"
+    const val ACTION_WORLD_WIDGET_REFRESH = "com.futureclock.app.ACTION_WORLD_WIDGET_REFRESH"
 }
 
 object Extras {

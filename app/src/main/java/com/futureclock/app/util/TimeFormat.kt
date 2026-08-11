@@ -5,6 +5,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.math.abs
 
 object TimeFormat {
 
@@ -66,6 +67,17 @@ object TimeFormat {
         val h = abs / 60
         val m = abs % 60
         return String.format(Locale.US, "UTC%s%02d:%02d", sign, h, m)
+    }
+
+    /** Offset from the device timezone at this instant, so daylight-saving rules stay correct. */
+    fun formatDeviceRelativeOffset(zone: TimeZone, now: Long = System.currentTimeMillis()): String {
+        val minutes = (zone.getOffset(now) - TimeZone.getDefault().getOffset(now)) / 60_000
+        if (minutes == 0) return "Same time"
+        val sign = if (minutes > 0) "+" else "−"
+        val absoluteMinutes = abs(minutes)
+        val hours = absoluteMinutes / 60
+        val remainder = absoluteMinutes % 60
+        return if (remainder == 0) "$sign${hours}h" else "$sign${hours}h ${remainder}m"
     }
 
     /** Days difference between two zones at "today" relative to device zone. */

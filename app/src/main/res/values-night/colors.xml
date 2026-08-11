@@ -43,4 +43,13 @@
     <color name="neon_orange">@color/status_warning</color>
     <color name="neon_pink">@color/status_error</color>
     <color name="ripple_neon">#298EAAFF</color>
+
+    <color name="widget_bg">#121A27</color>
+    <color name="widget_bg_alt">#1A2535</color>
+    <color name="widget_stroke">#3A4960</color>
+    <color name="widget_text">#F4F7FB</color>
+    <color name="widget_text_muted">#B4BFCE</color>
+    <color name="widget_accent">#AFC1FF</color>
+    <color name="widget_nav">#24334A</color>
+    <color name="widget_nav_pressed">#344866</color>
 </resources>

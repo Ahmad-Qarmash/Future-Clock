@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val tabFragments = mutableMapOf<Int, Fragment>()
+    private var pendingWorldCityId: Long? = null
 
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -121,6 +122,22 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    /** Opens the launcher-widget settings screen with normal Back navigation. */
+    fun openWidgetSettings() {
+        supportFragmentManager.beginTransaction()
+            .setReorderingAllowed(true)
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+            .replace(
+                R.id.fragment_container,
+                com.futureclock.app.ui.settings.WidgetSettingsFragment(),
+                "widget_settings"
+            )
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun consumePendingWorldCityId(): Long? = pendingWorldCityId.also { pendingWorldCityId = null }
+
     private fun setupBannerAd() {
         val playServices = com.google.android.gms.common.GoogleApiAvailability.getInstance()
             .isGooglePlayServicesAvailable(this)
@@ -164,7 +181,17 @@ class MainActivity : AppCompatActivity() {
             Actions.ACTION_OPEN_STOPWATCH_TAB -> R.id.nav_more
             else -> return
         }
+        if (action == Actions.ACTION_OPEN_WORLD_TAB && intent.hasExtra(EXTRA_WORLD_CITY_ID)) {
+            pendingWorldCityId = intent.getLongExtra(EXTRA_WORLD_CITY_ID, NO_WORLD_CITY_ID)
+                .takeIf { it != NO_WORLD_CITY_ID }
+        }
         binding.bottomNav.selectedItemId = tab
+        if (action == Actions.ACTION_OPEN_WORLD_TAB && pendingWorldCityId != null) {
+            binding.bottomNav.post {
+                (supportFragmentManager.findFragmentByTag("tab_${R.id.nav_world}") as? WorldFragment)
+                    ?.focusCity(pendingWorldCityId ?: return@post)
+            }
+        }
         if (action == Actions.ACTION_OPEN_STOPWATCH_TAB) {
             binding.bottomNav.post { openStopwatchFromMore() }
         }
@@ -187,5 +214,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_DEFAULT_TAB = "default_tab"
+        const val EXTRA_WORLD_CITY_ID = "world_city_id"
+        private const val NO_WORLD_CITY_ID = Long.MIN_VALUE
     }
 }

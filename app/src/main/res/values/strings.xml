@@ -70,7 +70,7 @@
 
     <!-- ================= World clock ================= -->
     <string name="world_empty_title">No cities yet</string>
-    <string name="world_empty_subtitle">Tap + to add a city</string>
+    <string name="world_empty_subtitle">Add places to compare their local time, offsets, and day changes. Your list also powers World Clock Live on your Home screen.</string>
     <string name="world_add_title">Add a city</string>
     <string name="world_search_hint">Search any city, town, village, region, or country</string>
     <string name="world_catalog_summary">235,000+ places worldwide · Offline data by GeoNames</string>
@@ -200,6 +200,9 @@
     <string name="settings_default_sound">Default sound</string>
     <string name="settings_gradual_volume">Gradually increase volume</string>
     <string name="settings_about">About</string>
+    <string name="settings_widgets">Widgets</string>
+    <string name="settings_widgets_description">World Clock Live and Next Alarm for your Home screen</string>
+    <string name="settings_widgets_subtitle">Add and understand the live widgets available from Future Clock.</string>
     <string name="settings_time_section">Time display</string>
     <string name="settings_version">Version %1$s</string>
     <string name="settings_open_source">Open source licenses</string>
@@ -209,18 +212,17 @@
     <string name="more_settings_description">Time display, alarms, and app behavior</string>
     <string name="more_appearance_description">System, light, or dark appearance</string>
     <string name="more_widgets">Widgets</string>
-    <string name="more_widgets_description">Add clocks and the next alarm to your Home screen</string>
-    <string name="more_widgets_help">Touch and hold an empty area of your Home screen, choose Widgets, then find Future Clock.</string>
+    <string name="more_widgets_description">Add World Clock Live and the next alarm to your Home screen</string>
     <string name="more_about">About Future Clock</string>
     <string name="more_about_description">Version, credits, and open-source information</string>
     <string name="settings_shortcut_description">Open Settings</string>
 
     <!-- ================= Widgets ================= -->
-    <string name="widget_analog_label">Future Clock — Analog</string>
-    <string name="widget_digital_label">Future Clock — Digital</string>
-    <string name="widget_world_label">Future Clock — World &amp; Alarms</string>
+    <string name="widget_world_label">Future Clock — World Clock Live</string>
     <string name="widget_next_alarm_label">Future Clock — Next Alarm</string>
-    <string name="widget_world_dashboard_title">WORLD &amp; ALARMS</string>
+    <string name="widget_world_title">WORLD CLOCK LIVE</string>
+    <string name="widget_world_live_name">World Clock Live</string>
+    <string name="widget_world_description">Your tracked World Clock places, live and pageable.</string>
     <string name="widget_next_alarm_short">NEXT ALARM</string>
     <string name="widget_no_alarm">No alarm set</string>
     <string name="widget_no_alarm_short">No alarm</string>
@@ -230,6 +232,33 @@
     <string name="widget_time_unavailable">—</string>
     <string name="widget_tomorrow">Tomorrow</string>
     <string name="widget_yesterday">Yesterday</string>
+    <string name="widget_other_day">Different day</string>
+    <string name="widget_same_time">Same time</string>
+    <string name="widget_city_meta">%1$s · %2$s · %3$s · %4$s</string>
+    <string name="widget_city_description">%1$s, %2$s. %3$s. %4$s. Open in World Clock.</string>
+    <string name="widget_page_indicator">%1$d / %2$d</string>
+    <string name="widget_no_places_short">No places</string>
+    <string name="widget_empty_title">Your World Clock is ready</string>
+    <string name="widget_empty_subtitle">Add places in Future Clock, then this widget will show them here.</string>
+    <string name="widget_unavailable_short">Unavailable</string>
+    <string name="widget_unavailable_title">Couldn’t refresh World Clock</string>
+    <string name="widget_unavailable_subtitle">Tap to open Future Clock and try again.</string>
+    <string name="widget_previous_page">Previous places</string>
+    <string name="widget_next_page">Next places</string>
+    <string name="widget_previous_symbol" translatable="false">‹</string>
+    <string name="widget_next_symbol" translatable="false">›</string>
+    <string name="widget_add_to_home">Add to Home screen</string>
+    <string name="widget_pin_requested">Choose where to place the widget on your Home screen.</string>
+    <string name="widget_pin_fallback">Touch and hold an empty space on your Home screen, choose Widgets, then find Future Clock.</string>
+    <string name="widget_pin_hint">If your launcher does not show the add prompt, touch and hold an empty Home-screen area, choose Widgets, then find Future Clock.</string>
+    <string name="widget_promotion_title">World Clock Live</string>
+    <string name="widget_promotion_subtitle">See your tracked places without opening the app.</string>
+    <string name="widget_discovery_title">Put your world on the Home screen</string>
+    <string name="widget_discovery_message">World Clock Live automatically follows this exact list of places. It rotates through pages as time updates.</string>
+    <string name="widget_not_now">Not now</string>
+    <string name="widget_world_settings_description">Uses your World Clock list only—add, remove, or reorder places here in the app and every widget updates right away.</string>
+    <string name="widget_world_rotation_description">Shows 2–6 places based on available height. When there are more places, it advances one page each minute; the buttons move pages immediately.</string>
+    <string name="widget_next_alarm_settings_description">A compact companion that always shows your next enabled alarm in its saved time zone.</string>
     <string name="widget_duration_days">%1$dd %2$dh</string>
     <string name="widget_duration_hours">%1$dh %2$dm</string>
     <string name="widget_duration_minutes">%1$dm</string>
@@ -245,11 +274,6 @@
         <item quantity="one">%1$d day ago</item>
         <item quantity="other">%1$d days ago</item>
     </plurals>
-    <string name="widget_add_cities">Choose up to three places</string>
-    <string name="widget_city_limit">You can choose up to three places</string>
-    <string name="widget_choose_one_city">Choose at least one place</string>
-    <string name="widget_city_selected_description">%1$s, %2$s. Selected; tap to remove.</string>
-    <string name="widget_city_unselected_description">%1$s, %2$s. Tap to select.</string>
     <string name="widget_city_format">%1$s</string>
     <string name="widget_time_format">%1$s</string>
     <string name="widget_seconds">:%1$02d</string>

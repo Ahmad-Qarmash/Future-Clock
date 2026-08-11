@@ -52,14 +52,11 @@ object WidgetUpdateScheduler {
         } catch (_: Throwable) { /* defensive: never crash on tick scheduling */ }
     }
 
-    fun refreshAll(context: Context) {
+    /** Redraws widgets after app data changes. World Clock stays on its current page. */
+    fun refreshAll(context: Context, advanceWorldPage: Boolean = false) {
         val mgr = android.appwidget.AppWidgetManager.getInstance(context)
-        listOf(
-            AnalogClockWidget::class.java,
-            DigitalClockWidget::class.java,
-            WorldClockWidget::class.java,
-            NextAlarmWidget::class.java
-        ).forEach { cls ->
+        WorldClockWidget.requestRefresh(context, advanceWorldPage)
+        listOf(NextAlarmWidget::class.java).forEach { cls ->
             val cn = ComponentName(context, cls)
             val ids = mgr.getAppWidgetIds(cn)
             if (ids.isEmpty()) return@forEach

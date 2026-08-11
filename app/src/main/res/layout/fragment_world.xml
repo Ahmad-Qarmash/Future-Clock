@@ -25,11 +25,65 @@
             android:text="@string/world_subtitle"
             android:textAppearance="@style/TextAppearance.FutureClock.Body" />
 
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/widget_promotion"
+            style="@style/Widget.FutureClock.Card.Flat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/page_padding"
+            android:layout_marginTop="@dimen/space_l">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/space_m">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_empty_icon"
+                    android:contentDescription="@null"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_world"
+                    app:tint="@color/brand_primary" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_m"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_promotion_title"
+                        android:textAppearance="@style/TextAppearance.FutureClock.Section" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/widget_promotion_subtitle"
+                        android:textAppearance="@style/TextAppearance.FutureClock.Caption" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_add_widget"
+                    style="@style/Widget.FutureClock.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="@string/widget_add_to_home" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="@dimen/space_l"
+            android:layout_marginTop="@dimen/space_m"
             android:layout_weight="1"
             android:clipToPadding="false"
             android:paddingHorizontal="@dimen/page_padding"
@@ -75,6 +129,15 @@
                 android:gravity="center"
                 android:text="@string/world_empty_subtitle"
                 android:textAppearance="@style/TextAppearance.FutureClock.Body" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_empty_add"
+                style="@style/Widget.FutureClock.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_l"
+                android:text="@string/action_add_city"
+                app:icon="@drawable/ic_add" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

@@ -16,14 +16,14 @@ MainActivity
   └── routes widget deep-link intents to the right tab
   ↓
 Primary fragments (Clock, World, Alarm, Timer, More)
-Secondary fragments (Stopwatch, Settings)
+Secondary fragments (Stopwatch, Settings, Widget settings)
   ↓ observe Flow
 Room DAO (alarms, world cities)   +   DataStore (settings)
 Versioned SQLite place catalog (read-only, separate from user data)
 
 Background paths
   AlarmManager.setAlarmClock ──► AlarmReceiver ──► AlarmRingActivity
-  AlarmManager.setExact      ──► WidgetTickReceiver ──► all 4 widgets redraw
+  AlarmManager.setExact      ──► WidgetTickReceiver ──► World Clock Live + Next Alarm redraw
   BootReceiver               ──► re-arms all enabled alarms from Room
 
 Foreground services
@@ -41,8 +41,8 @@ Foreground services
 | `ui/alarm`                                      | Alarm list, edit screen with time picker, day chips, snooze slider   |
 | `ui/timer`                                      | Countdown timer with circular neon progress and presets              |
 | `ui/stopwatch`                                  | Stopwatch with laps and share                                        |
-| `ui/more`                                       | Secondary tools, preferences, widget help, and app information       |
-| `ui/settings`                                   | User preferences screen                                              |
+| `ui/more`                                       | Secondary tools, preferences, widget entry point, and app information |
+| `ui/settings`                                   | User preferences plus the Settings → Widgets screen                  |
 | `ui/views`                                      | Custom `AnalogClockView` and `CircularTimerView` (Canvas-drawn)      |
 | `data/db`                                       | Room entities (`AlarmEntity`, `WorldCityEntity`), DAOs, database     |
 | `data/prefs`                                    | DataStore-backed `SettingsRepository`                                |
@@ -50,7 +50,7 @@ Foreground services
 | `alarm`                                         | `AlarmScheduler`, `AlarmReceiver`, `AlarmRingActivity`, snooze      |
 | `service`                                       | `TimerService` and `StopwatchService` foreground services            |
 | `receiver`                                      | `BootReceiver`, `WidgetTickReceiver`                                 |
-| `widget`                                        | 4 `AppWidgetProvider`s, `WidgetUpdateScheduler`, world widget config |
+| `widget`                                        | World Clock Live, Next Alarm, pinning/discovery helpers, and scheduler |
 | `ads`                                           | `AdManager` singleton for banner + interstitial                      |
 | `notification`                                  | Channel IDs, action keys, extras keys                                |
 | `util`                                          | Pure-Kotlin helpers (`TimeFormat`, `AlarmMath`)                      |
@@ -93,20 +93,20 @@ duplicating work.
 1. `FutureClockApp.onCreate` calls `WidgetUpdateScheduler.scheduleNext(context)`.
 2. The scheduler sets an exact alarm at the next minute boundary + 1.5s buffer.
 3. At that time, `WidgetTickReceiver` fires and the scheduler:
-   - Calls `refreshAll(context)` which broadcasts `ACTION_APPWIDGET_UPDATE` to all 4
-     `AppWidgetProvider` classes; each one re-renders its `RemoteViews`.
+   - Refreshes World Clock Live and Next Alarm. World Clock Live advances its per-widget
+     page once before rendering current Room data.
    - Reschedules itself at the next minute boundary.
 4. The minute alignment avoids drift and the small buffer gives the system time to
    fully draw before the next redraw.
 
-## World widget configuration
+## World Clock Live data flow
 
-1. User long-presses the home screen, picks the World widget, then the system
-   launches `WorldClockConfigActivity`.
-2. The activity lets the user search and toggle 1–3 cities.
-3. On confirm, complete place records are saved to `SharedPreferences` keyed by widget
-   instance ID, so rendering survives process death or catalog replacement.
-4. Launchers that support reconfiguration can reopen the same activity for an existing widget.
+1. `WorldFragment` and `WorldPickerActivity` are the only ways tracked locations change.
+2. They write Room's ordered `world_cities` list, then call `WidgetUpdateScheduler.refreshAll()`.
+3. Every World Clock Live instance reads that same list. `SharedPreferences` stores only each
+   instance's page number, never location records.
+4. Header taps open the World tab; row taps also pass the location ID so the app scrolls to it.
+5. Settings → Widgets and the World screen use `requestPinAppWidget` where the launcher supports it.
 
 ## Ads
 

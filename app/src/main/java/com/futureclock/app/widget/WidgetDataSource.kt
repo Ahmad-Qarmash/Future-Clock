@@ -15,26 +15,36 @@ internal data class WidgetAlarm(
 )
 
 internal data class WidgetSnapshot(
-    val cities: List<WorldCityEntity>,
     val nextAlarm: WidgetAlarm?,
+    val use24h: Boolean
+)
+
+internal data class WorldWidgetSnapshot(
+    val cities: List<WorldCityEntity>,
     val use24h: Boolean
 )
 
 /** Loads one consistent snapshot for widgets from the same data used by the app screens. */
 internal object WidgetDataSource {
 
+    suspend fun loadWorld(context: Context): WorldWidgetSnapshot {
+        val app = context.applicationContext as FutureClockApp
+        return WorldWidgetSnapshot(
+            cities = runCatching { app.database.worldCityDao().getAll() }
+                .getOrDefault(emptyList()),
+            use24h = runCatching { app.settings.use24h.first() }.getOrDefault(true)
+        )
+    }
+
     suspend fun load(context: Context): WidgetSnapshot {
         val app = context.applicationContext as FutureClockApp
         val now = System.currentTimeMillis()
-        val cities = runCatching { app.database.worldCityDao().getAll() }
-            .getOrDefault(emptyList())
         val alarms = runCatching { app.database.alarmDao().getAll() }
             .getOrDefault(emptyList())
         val use24h = runCatching { app.settings.use24h.first() }
             .getOrDefault(true)
 
         return WidgetSnapshot(
-            cities = cities,
             nextAlarm = findNextAlarm(alarms, now),
             use24h = use24h
         )

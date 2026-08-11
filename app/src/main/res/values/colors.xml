@@ -45,13 +45,15 @@
     <color name="neon_pink">@color/status_error</color>
     <color name="ripple_neon">#1F315EDB</color>
 
-    <!-- Widgets use a controlled dark canvas for consistent launcher legibility. -->
-    <color name="widget_bg">#121A27</color>
-    <color name="widget_bg_alt">#1A2535</color>
-    <color name="widget_stroke">#3A4960</color>
-    <color name="widget_text">#F4F7FB</color>
-    <color name="widget_text_muted">#AAB5C5</color>
-    <color name="widget_accent">#8EAAFF</color>
+    <!-- Widgets follow the selected day/night resources with intentionally stronger contrast. -->
+    <color name="widget_bg">#F8FAFE</color>
+    <color name="widget_bg_alt">#E9EFFA</color>
+    <color name="widget_stroke">#C8D4E5</color>
+    <color name="widget_text">#172033</color>
+    <color name="widget_text_muted">#526179</color>
+    <color name="widget_accent">#264DAF</color>
+    <color name="widget_nav">#DCE5FF</color>
+    <color name="widget_nav_pressed">#C3D1FA</color>
 
     <color name="ic_launcher_background">#0D1833</color>
 </resources>

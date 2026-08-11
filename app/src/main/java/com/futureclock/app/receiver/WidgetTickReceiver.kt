@@ -7,7 +7,7 @@ import com.futureclock.app.widget.WidgetUpdateScheduler
 
 class WidgetTickReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        WidgetUpdateScheduler.refreshAll(context)
+        WidgetUpdateScheduler.refreshAll(context, advanceWorldPage = true)
         WidgetUpdateScheduler.scheduleNext(context)
     }
 }

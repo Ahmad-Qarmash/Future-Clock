@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -55,11 +54,7 @@ class MoreFragment : Fragment() {
                     R.string.more_widgets_description,
                     R.drawable.ic_world
                 ) {
-                    AlertDialog.Builder(requireContext(), R.style.Theme_FutureClock_Dialog)
-                        .setTitle(R.string.more_widgets)
-                        .setMessage(R.string.more_widgets_help)
-                        .setPositiveButton(R.string.action_ok, null)
-                        .show()
+                    host?.openWidgetSettings()
                 },
                 MoreAction(
                     R.string.more_about,

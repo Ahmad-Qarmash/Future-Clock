@@ -1,6 +1,6 @@
 # Future Clock
 
-A free, ad-supported universal Android clock app with a bold cyberpunk neon design and four production-quality home-screen widgets. Future Clock combines a live clock, world clock, alarms, timer, and stopwatch into one lightweight native app.
+A free, ad-supported universal Android clock app with a focused, premium design and two useful home-screen widgets. Future Clock combines a live clock, world clock, alarms, timer, and stopwatch into one lightweight native app.
 
 ## Main features
 
@@ -10,8 +10,8 @@ A free, ad-supported universal Android clock app with a bold cyberpunk neon desi
 - **Timer** — circular neon progress, presets (1/3/5/10/30 min), foreground service, system notification with pause/reset
 - **Focused navigation** — Clock, World, Alarms, Timer, and More stay within Android’s five-destination guidance
 - **Stopwatch** — sub-second precision, lap history, and sharing, available from More
-- **Settings** — 12/24 h, show seconds, snooze length, and System/Light/Dark appearance
-- **Four home-screen widgets** — analog, digital, world clock, and next-alarm
+- **Settings** — 12/24 h, show seconds, snooze length, System/Light/Dark appearance, and widget controls
+- **Two home-screen widgets** — World Clock Live (shared tracked places, paging, and live offsets) and Next Alarm
 
 ## Stack
 
@@ -64,14 +64,14 @@ Separate versioned SQLite catalog (disposable offline GeoNames search data)
         ↑
 AlarmScheduler (AlarmManager)  — AlarmReceiver  — AlarmRingActivity
 BootReceiver                   — re-arms alarms on BOOT_COMPLETED
-WidgetUpdateScheduler          — re-renders all widgets each minute
+WidgetUpdateScheduler          — updates World Clock Live and Next Alarm each minute
 AdManager (AdMob)              — banner + interstitial
 ```
 
 ## Documentation
 
 - [PROJECT_MAP.md](./PROJECT_MAP.md) — directory structure, data model, key flows
-- [WIDGETS.md](./WIDGETS.md) — the four home-screen widgets in detail
+- [WIDGETS.md](./WIDGETS.md) — the two home-screen widgets in detail
 - [ADS.md](./ADS.md) — AdMob integration, swapping in real unit IDs, ad policy
 - [BUILD.md](./BUILD.md) — release build, signing, Play Store preparation
 - [ROADMAP.md](./ROADMAP.md) — future feature ideas

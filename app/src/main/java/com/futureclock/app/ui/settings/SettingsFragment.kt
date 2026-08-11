@@ -45,6 +45,9 @@ class SettingsFragment : Fragment() {
                 }
             }
         }
+        binding.rowWidgets.setOnClickListener {
+            (activity as? com.futureclock.app.MainActivity)?.openWidgetSettings()
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             val settings = app.settings
@@ -92,6 +95,7 @@ class SettingsFragment : Fragment() {
                 viewLifecycleOwner.lifecycleScope.launch {
                     settings.setThemeMode(mode)
                     ThemeController.apply(mode)
+                    com.futureclock.app.widget.WidgetUpdateScheduler.refreshAll(requireContext())
                 }
             }
         }

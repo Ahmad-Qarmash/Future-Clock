@@ -56,11 +56,16 @@ class WorldAdapter(
         holder.binding.cityCountry.text = city.country
         holder.binding.cityTime.text = TimeFormat.formatTime(use24h = use24h, hour = h, minute = m)
         val deltaDays = TimeFormat.dayDelta(zone)
-        holder.binding.cityDayDiff.text = when {
+        val dayLabel = when {
             deltaDays > 0 -> holder.itemView.context.getString(R.string.world_day, deltaDays)
             deltaDays < 0 -> holder.itemView.context.getString(R.string.world_yesterday, -deltaDays)
             else -> holder.itemView.context.getString(R.string.world_today)
         }
+        holder.binding.cityDayDiff.text = listOf(
+            TimeFormat.formatOffset(zone),
+            TimeFormat.formatDeviceRelativeOffset(zone),
+            dayLabel
+        ).joinToString(" · ")
         holder.binding.btnRemove.setOnClickListener { onRemove(city) }
     }
 }

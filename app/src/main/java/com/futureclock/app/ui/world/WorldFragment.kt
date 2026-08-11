@@ -10,8 +10,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.futureclock.app.FutureClockApp
+import com.futureclock.app.MainActivity
+import com.futureclock.app.R
 import com.futureclock.app.databinding.FragmentWorldBinding
+import com.futureclock.app.ui.common.UiFeedback
+import com.futureclock.app.widget.WidgetUpdateScheduler
+import com.futureclock.app.widget.WorldWidgetDiscovery
+import com.futureclock.app.widget.WorldWidgetPinning
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -22,6 +29,8 @@ class WorldFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var adapter: WorldAdapter
     private var persistJob: Job? = null
+    private var discoveryPromptVisible = false
+    private var pendingFocusCityId: Long? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentWorldBinding.inflate(inflater, container, false)
@@ -35,7 +44,7 @@ class WorldFragment : Fragment() {
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     val dao = (requireContext().applicationContext as FutureClockApp).database.worldCityDao()
                     dao.deleteByLocationId(city.locationId)
-                    com.futureclock.app.widget.WidgetUpdateScheduler.refreshAll(requireContext())
+                    WidgetUpdateScheduler.refreshAll(requireContext())
                 }
             }
         )
@@ -60,8 +69,13 @@ class WorldFragment : Fragment() {
             startActivity(Intent(requireContext(), WorldPickerActivity::class.java))
         }
         binding.btnSettings.setOnClickListener {
-            (activity as? com.futureclock.app.MainActivity)?.openSettings()
+            (activity as? MainActivity)?.openSettings()
         }
+        binding.btnAddWidget.setOnClickListener { requestWorldWidget() }
+        binding.btnEmptyAdd.setOnClickListener {
+            startActivity(Intent(requireContext(), WorldPickerActivity::class.java))
+        }
+        pendingFocusCityId = (activity as? MainActivity)?.consumePendingWorldCityId()
 
         viewLifecycleOwner.lifecycleScope.launch {
             val app = requireContext().applicationContext as FutureClockApp
@@ -69,6 +83,8 @@ class WorldFragment : Fragment() {
             dao.observeAll().collect { cities ->
                 adapter.submit(cities)
                 binding.emptyState.visibility = if (cities.isEmpty()) View.VISIBLE else View.GONE
+                applyPendingFocus(cities)
+                maybeShowWidgetDiscovery(cities.size)
             }
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -85,6 +101,49 @@ class WorldFragment : Fragment() {
             snapshot.forEachIndexed { index, city ->
                 dao.update(city.copy(sortOrder = index + 1))
             }
+            WidgetUpdateScheduler.refreshAll(requireContext())
+        }
+    }
+
+    /** Called by MainActivity when a widget row is tapped. */
+    fun focusCity(locationId: Long) {
+        pendingFocusCityId = locationId
+        applyPendingFocus(adapter.snapshot())
+    }
+
+    private fun applyPendingFocus(cities: List<com.futureclock.app.data.db.WorldCityEntity>) {
+        val cityId = pendingFocusCityId ?: return
+        val index = cities.indexOfFirst { it.locationId == cityId }
+        if (index >= 0) {
+            binding.recycler.post { binding.recycler.smoothScrollToPosition(index) }
+            pendingFocusCityId = null
+        }
+    }
+
+    private fun maybeShowWidgetDiscovery(cityCount: Int) {
+        if (discoveryPromptVisible || !WorldWidgetDiscovery.shouldPrompt(requireContext(), cityCount)) return
+        discoveryPromptVisible = true
+        binding.root.post {
+            if (!isAdded || !WorldWidgetDiscovery.shouldPrompt(requireContext(), cityCount)) return@post
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.widget_discovery_title)
+                .setMessage(R.string.widget_discovery_message)
+                .setPositiveButton(R.string.widget_add_to_home) { _, _ ->
+                    WorldWidgetDiscovery.markPromptShown(requireContext())
+                    requestWorldWidget()
+                }
+                .setNegativeButton(R.string.widget_not_now) { _, _ ->
+                    WorldWidgetDiscovery.markPromptShown(requireContext())
+                }
+                .show()
+        }
+    }
+
+    private fun requestWorldWidget() {
+        if (WorldWidgetPinning.requestWorldWidget(requireContext())) {
+            UiFeedback.show(binding.root, R.string.widget_pin_requested)
+        } else {
+            UiFeedback.show(binding.root, WorldWidgetPinning.fallbackMessage())
         }
     }
 

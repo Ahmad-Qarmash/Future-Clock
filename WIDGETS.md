@@ -1,107 +1,70 @@
 # Widgets
 
-Future Clock ships four production-quality home-screen widgets. All four tick
-every minute via a shared `WidgetUpdateScheduler` that uses an exact `AlarmManager`
-aligned to minute boundaries. They never spam `updatePeriodMillis` and never
-use background services, so battery cost is negligible.
+Future Clock offers two deliberate, battery-conscious home-screen widgets:
 
-## 1. Analog clock widget
+- **World Clock Live** — the flagship view of the places already tracked in the World tab.
+- **Next Alarm** — the soonest enabled alarm in its saved IANA timezone.
 
-Three layout variants are picked automatically based on the user-resized height:
+Both are refreshed by `WidgetUpdateScheduler` at the next minute boundary. The scheduler
+uses an exact alarm when permitted and an idle-safe fallback when it is not. It does not
+run a background service or rely on a noisy `updatePeriodMillis` loop.
 
-| Size              | Layout                    | Contents                                                  |
-| ----------------- | ------------------------- | --------------------------------------------------------- |
-| 2×2 (small)       | `widget_analog_small`     | Canvas-drawn analog face only                             |
-| 3×3 (medium)      | `widget_analog_medium`    | Analog face + small date line                             |
-| 4×4 (large)       | `widget_analog_large`     | Day name on top, analog face, date below                  |
+## World Clock Live
 
-The face is rendered by `ClockRenderer.renderBitmap` into an `ImageView` Bitmap.
-This keeps the renderer shared with the in-app `AnalogClockView` so the two
-never drift visually. The renderer draws:
+World Clock Live is a direct, read-only projection of Room's `world_cities` table. It
+does **not** maintain a separate widget city list: adding, removing, or reordering a
+place in the World tab updates every pinned instance immediately.
 
-- Dark face fill and a 1.5dp neon-cyan stroke ring
-- 60 ticks (12 major, 48 minor) using `Paint.Cap.ROUND`
-- 12/3/6/9 numerals in the inner ring
-- Hour hand in neon-magenta, minute hand in neon-cyan
-- Optional second hand in neon-lime with a `BlurMaskFilter` glow
-- Filled center cap in lime over a dark plate
+Each row contains the city and country, current local time, current IANA UTC offset,
+device-relative offset, and Today/Tomorrow/Yesterday context. Offsets are calculated
+for the current instant, so daylight-saving changes are handled by the underlying IANA
+timezone rules.
 
-The widget respects the device timezone (`TimeZone.getDefault()`) and re-renders
-every minute when `WidgetTickReceiver` fires.
+### Size, pages, and controls
 
-## 2. Digital clock widget
+The widget adapts to the height provided by the launcher:
 
-Two layout variants based on height:
+| Available height | Visible places |
+| --- | --- |
+| compact | 2 |
+| medium | 3 |
+| tall | 4 |
+| extra tall | 5–6 |
 
-| Size        | Layout                       | Contents                                       |
-| ----------- | ---------------------------- | ---------------------------------------------- |
-| 2×1         | `widget_digital_small`       | HH:mm + :ss (separate), day, date              |
-| 4×2         | `widget_digital_medium`      | Big HH:mm:ss, full date                        |
+When there are more places than fit, it advances to the next page on the scheduled
+minute tick and wraps around. Each widget instance saves only its own current page in
+`SharedPreferences`; page state survives process death and reboot. Previous/Next
+controls change that instance's page without opening the app.
 
-The digital widget always uses 24-hour format for compactness and readability.
-Times are formatted with the device locale via `TimeFormat.formatTime`.
+Tapping the header opens the World tab. Tapping a place opens the World tab and scrolls
+to that tracked location. The empty state explains how to add the first place.
 
-## 3. World clock widget
+You can add the widget from the World screen's promotion card or **Settings → Widgets**.
+On Android 8+ launchers that support the platform pin request, Future Clock asks the
+launcher to place it. Otherwise it gives the standard Home screen → Widgets fallback.
 
-Resizable. Picks layouts by the user-selected height:
+## Next Alarm
 
-| Size        | Layout                       | Cities shown |
-| ----------- | ---------------------------- | ------------ |
-| small       | `widget_world_medium`        | 1–2 cities   |
-| large       | `widget_world_large`         | 1–3 cities   |
+Next Alarm shows the next enabled alarm, its saved local time, optional label/place, and
+a live countdown. It uses the same alarm data and timezone-aware scheduling logic as the
+app, so an alarm anchored to another region remains correct when the device timezone
+changes.
 
-Each row shows the country flag + city name on the left and the local time on the
-right. Cities are configured at widget-add time via `WorldClockConfigActivity`
-which lets the user search the offline `CityCatalog` of 235,000+ places and pick
-1–3 locations. The complete selected records are persisted in `SharedPreferences`
-keyed by widget instance id, so each pinned widget can have a different set of
-cities and remains renderable after process death or catalog replacement.
-Launchers with reconfiguration support can reopen the picker for an existing
-widget.
-
-## 4. Next alarm widget
-
-Single layout `widget_next_alarm`. Shows:
-
-- "NEXT ALARM" label in neon-cyan
-- The time of the next enabled alarm in light type
-- A subtitle that either shows the alarm's label (if any) or a live countdown
-  such as `in 8h 24m`
-
-If no alarms are enabled, the widget displays "No alarm set" and a blank
-subtitle so it never looks broken.
-
-## Update scheduler internals
+## Update flow
 
 ```text
-WidgetUpdateScheduler.scheduleNext(context)
-  - alarmAt = (nowMs / 60_000 + 1) * 60_000 + 1_500  (next minute + 1.5s)
-  - setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, alarmAt, tickIntent)
+World Clock change (add / remove / reorder)
+  -> Room world_cities
+  -> WidgetUpdateScheduler.refreshAll()
+  -> every World Clock Live instance renders the same ordered list
 
-WidgetTickReceiver.onReceive
-  - WidgetUpdateScheduler.refreshAll(context)
-    - broadcasts ACTION_APPWIDGET_UPDATE to all 4 widget providers
-  - WidgetUpdateScheduler.scheduleNext(context)
+Minute tick
+  -> WidgetTickReceiver
+  -> World Clock Live refreshes and advances one page per instance
+  -> Next Alarm refreshes its countdown
+  -> scheduler arms the next minute tick
 ```
 
-The scheduler is `setExactAndAllowWhileIdle` so it survives Doze on API 23+
-and is also resilient to manufacturer background restrictions. Because it
-self-reschedules at the next minute boundary, total drift over a day is bounded
-to 1.5s.
-
-## Tap-to-open
-
-Every widget root view sets a `PendingIntent` to `MainActivity` with one of
-the `ACTION_OPEN_*_TAB` actions from `notification.NotificationConstants`. The
-activity reads the action in `handleDeepLink` and selects the matching
-`BottomNavigationView` item so the user lands on the relevant tab.
-
-## Customising the widgets
-
-- Want different colours? Edit `ClockRenderer` (analog) or the layout XMLs
-  (text widgets). The cyberpunk palette lives in `res/values/colors.xml`.
-- Want a 12-hour digital widget? Change `use24h = true` in
-  `DigitalClockWidget.updateOne` to `false`.
-- Want more cities in the world widget? Edit `widget_info_world.xml` to a
-  larger `targetCellHeight`, and add another row to `widget_world_large.xml`
-  plus the matching view ids.
+The launcher, not the app, owns final widget placement and may delay rendering while in
+battery saver or under manufacturer background restrictions. The next app/widget update
+will reconcile the display with Room.
